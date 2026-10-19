@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -43,10 +43,21 @@ async function submit(email = 'nutri.prueba@cauce.test', password = 'synthetic-p
   await user.click(screen.getByRole('button', { name: es.login.submit }));
 }
 
+// Fills the fields at once: these tests check the message, and typing per key is slow under load.
+function fillAndSubmit() {
+  fireEvent.change(screen.getByLabelText(es.login.email), {
+    target: { value: 'nutri.prueba@cauce.test' },
+  });
+  fireEvent.change(screen.getByLabelText(es.login.password), {
+    target: { value: 'synthetic-password' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: es.login.submit }));
+}
+
 async function messageAfterFailure(error: unknown): Promise<string> {
   const { controller } = renderLogin();
   controller.login.mockRejectedValueOnce(error);
-  await submit();
+  fillAndSubmit();
   return (await screen.findByRole('alert')).textContent ?? '';
 }
 

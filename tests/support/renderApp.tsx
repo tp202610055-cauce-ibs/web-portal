@@ -8,10 +8,12 @@ import { routes } from '@/app/routes';
 import type { InvitationGateway, SessionController } from '@/modules/identity';
 import type { PatientsGateway } from '@/modules/patients';
 
+import { fakePatientsGateway } from './patients';
+
 // The panel is empty unless a test provides its own gateway.
 export function testDependencies(
   session: SessionController,
-  patients: PatientsGateway = { listAssigned: () => Promise.resolve([]) },
+  patients: PatientsGateway = fakePatientsGateway(),
   invitations: InvitationGateway = { generate: () => new Promise(() => undefined) },
 ): AppDependencies {
   return {

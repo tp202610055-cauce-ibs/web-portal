@@ -3,7 +3,7 @@ import { Navigate, type RouteObject } from 'react-router';
 import { AppShell } from '@/app/AppShell';
 import { NotFoundPage } from '@/app/NotFoundPage';
 import { LoginPage, RequireNutritionist } from '@/modules/identity';
-import { PatientManagementPage, PatientsPage } from '@/modules/patients';
+import { PatientManagementPage, PatientRecordPage, PatientsPage } from '@/modules/patients';
 
 // Shared by the browser router and the tests, so every test enters through the real routes.
 export const routes: RouteObject[] = [
@@ -18,6 +18,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="/pacientes" replace /> },
       { path: 'pacientes', element: <PatientsPage /> },
+      { path: 'pacientes/:patientId', element: <PatientRecordPage /> },
       { path: 'gestion-pacientes', element: <PatientManagementPage /> },
     ],
   },

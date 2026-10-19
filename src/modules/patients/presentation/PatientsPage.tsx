@@ -95,7 +95,11 @@ function PatientsTable({ patients }: { readonly patients: AssignedPatient[] }) {
       <tbody>
         {patients.map((patient) => (
           <tr key={patient.patientUserId}>
-            <th scope="row">{patient.fullName ?? es.patients.nameUnavailable}</th>
+            <th scope="row">
+              <Link to={`/pacientes/${patient.patientUserId}`}>
+                {patient.fullName ?? es.patients.nameUnavailable}
+              </Link>
+            </th>
             <td>
               {patient.ibsSubtype === null ? es.patients.noSubtype : es.subtype[patient.ibsSubtype]}
             </td>

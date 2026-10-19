@@ -221,3 +221,73 @@ dialog.idle-dialog {
   letter-spacing: 0.08em;
   user-select: all;
 }
+
+/* Patient record: label and value pairs in two columns. */
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+}
+
+.details dt {
+  color: var(--text-secondary);
+}
+
+.details dd {
+  margin: 0;
+}
+
+/* Record tabs and the IBS-SSS chart; colours come from tokens, never inline styles. */
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: var(--border-default);
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--brand-strong);
+  border-bottom-color: var(--brand-base);
+  font-weight: 500;
+}
+
+.chart {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+}
+
+.chart-axis {
+  stroke: var(--bg-divider);
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--brand-base);
+  stroke-width: 2;
+}
+
+.chart-point {
+  fill: var(--brand-base);
+}
+
+.chart-label {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+
+.badge--success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
