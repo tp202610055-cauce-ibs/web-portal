@@ -19,6 +19,11 @@ function acceptedByNode(signal: AbortSignal): boolean {
 }
 
 globalThis.Request = class extends NodeRequest {
+  // Native requests (such as clones) must still count as Request for libraries that check instanceof.
+  static override [Symbol.hasInstance](value: unknown): boolean {
+    return value instanceof NodeRequest;
+  }
+
   constructor(input: RequestInfo | URL, init?: RequestInit) {
     const foreignSignal = init?.signal != null && !acceptedByNode(init.signal);
     super(input, foreignSignal ? { ...init, signal: null } : init);
