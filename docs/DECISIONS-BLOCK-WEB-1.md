@@ -135,8 +135,8 @@ renovación usa la cookie HttpOnly del backend (acta A68 del backend).
 
 ## Acta W2: Sesión del portal
 
-**Estado:** Aprobada (Trigo aprobó el plan el 2026-10-20)
-**Fecha:** 2026-10-20
+**Estado:** Aprobada (Trigo aprobó el plan el 2026-10-19)
+**Fecha:** 2026-10-19
 **Aprobado por:** Trigo
 **Aplicabilidad:** Módulo `identity`, cliente HTTP de `shared` y composición en `src/app`.
 
@@ -189,7 +189,7 @@ El cliente `cauce-web-portal` de Keycloak tiene hoy 1800 s de inactividad. Hasta
 ### Consecuencias
 
 - Los textos del bloqueo (423), del límite de intentos (429), del arranque sin conexión y del diálogo de
-  inactividad son propuestas y los valida nutrición.
+  inactividad son propuestas y quedan pendientes de revisión de redacción.
 - Una nota sin enviar se pierde al cerrar por inactividad; el aviso de los 13 minutos es la protección.
 - El recorrido contra el backend local, la cookie en DevTools y `/api/v1/health` por el proxy quedan
   para después de B-1.
