@@ -7,6 +7,7 @@ export type {
   PortalCredentials,
   PortalSessionGrant,
 } from '@/modules/identity/application/PortalAuthGateway';
+export type { InvitationGateway } from '@/modules/identity/application/InvitationGateway';
 export type { RefreshLock } from '@/modules/identity/application/RefreshLock';
 export type { SessionController } from '@/modules/identity/application/SessionController';
 export type { SessionReader } from '@/modules/identity/application/SessionReader';
@@ -16,8 +17,11 @@ export type { LoginFailure } from '@/modules/identity/domain/LoginError';
 export { NUTRITIONIST_ROLE } from '@/modules/identity/domain/Session';
 export type { Session, SessionUser, SignedOutReason } from '@/modules/identity/domain/Session';
 export { BroadcastCrossTabChannel } from '@/modules/identity/infrastructure/BroadcastCrossTabChannel';
+export { HttpInvitationGateway } from '@/modules/identity/infrastructure/HttpInvitationGateway';
 export { HttpPortalAuthGateway } from '@/modules/identity/infrastructure/HttpPortalAuthGateway';
 export { WebLocksRefreshLock } from '@/modules/identity/infrastructure/WebLocksRefreshLock';
+export { InvitationCodeGenerator } from '@/modules/identity/presentation/InvitationCodeGenerator';
+export { InvitationsProvider } from '@/modules/identity/presentation/InvitationsContext';
 export { LoginPage } from '@/modules/identity/presentation/LoginPage';
 export { LogoutButton } from '@/modules/identity/presentation/LogoutButton';
 export { RequireNutritionist } from '@/modules/identity/presentation/RequireNutritionist';

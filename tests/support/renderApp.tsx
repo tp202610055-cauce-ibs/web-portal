@@ -5,12 +5,20 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { AppProviders, type AppDependencies } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
-import type { SessionController } from '@/modules/identity';
+import type { InvitationGateway, SessionController } from '@/modules/identity';
+import type { PatientsGateway } from '@/modules/patients';
 
-export function testDependencies(session: SessionController): AppDependencies {
+// The panel is empty unless a test provides its own gateway.
+export function testDependencies(
+  session: SessionController,
+  patients: PatientsGateway = { listAssigned: () => Promise.resolve([]) },
+  invitations: InvitationGateway = { generate: () => new Promise(() => undefined) },
+): AppDependencies {
   return {
     session,
     queryClient: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+    patients,
+    invitations,
   };
 }
 

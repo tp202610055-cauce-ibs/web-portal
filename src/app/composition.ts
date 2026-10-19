@@ -3,10 +3,12 @@ import { QueryClient } from '@tanstack/react-query';
 import type { AppDependencies } from '@/app/AppProviders';
 import {
   BroadcastCrossTabChannel,
+  HttpInvitationGateway,
   HttpPortalAuthGateway,
   SessionService,
   WebLocksRefreshLock,
 } from '@/modules/identity';
+import { HttpPatientsGateway } from '@/modules/patients';
 import { createApiClient, type ApiClient } from '@/shared/infrastructure/apiClient';
 import { SystemClock } from '@/shared/infrastructure/SystemClock';
 
@@ -26,10 +28,13 @@ export function createAppDependencies(): AppComposition {
     lock: new WebLocksRefreshLock(),
     onSessionCleared: () => queryClient.clear(),
   });
+  const api = createApiClient({ baseUrl, tokens: sessionService });
   return {
     session: sessionService,
     sessionService,
     queryClient,
-    api: createApiClient({ baseUrl, tokens: sessionService }),
+    api,
+    patients: new HttpPatientsGateway(api),
+    invitations: new HttpInvitationGateway(api),
   };
 }

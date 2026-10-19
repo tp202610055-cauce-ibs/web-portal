@@ -13,6 +13,7 @@ export function AppShell() {
         <span>{es.app.name}</span>
         <nav aria-label={es.nav.label}>
           <NavLink to="/pacientes">{es.nav.patients}</NavLink>
+          <NavLink to="/gestion-pacientes">{es.nav.management}</NavLink>
         </nav>
         <div className="shell-user">
           <span>
