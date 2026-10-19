@@ -1,0 +1,54 @@
+/* Tokens from docs/02-design-system/00-design-system.html (:root). Edit there first, then copy here. */
+:root {
+  /* Surfaces */
+  --bg-page: #fdfaf6;
+  --bg-card: #ffffff;
+  --bg-subtle: #f5efe6;
+  --bg-divider: #ede5d7;
+
+  /* Text */
+  --text-primary: #1f1a15;
+  --text-secondary: #524a42;
+  --text-tertiary: #6e635a;
+
+  /* Brand */
+  --brand-soft: #faece7;
+  --brand-base: #993c1d;
+  --brand-strong: #712b13;
+  --brand-darkest: #4a1b0c;
+
+  /* FODMAP */
+  --fodmap-low-bg: #eaf3de;
+  --fodmap-low-text: #27500a;
+  --fodmap-mod-bg: #faeeda;
+  --fodmap-mod-text: #854f0b;
+  --fodmap-high-bg: #fcebeb;
+  --fodmap-high-text: #a32d2d;
+
+  /* Semantic states */
+  --success-bg: #eaf3de;
+  --success-text: #27500a;
+  --warning-bg: #faeeda;
+  --warning-text: #854f0b;
+  --danger-bg: #fcebeb;
+  --danger-text: #a32d2d;
+  --info-bg: #e6f1fb;
+  --info-text: #0c447c;
+
+  /* Typography; the self-hosted variable font registers as "Inter Variable" */
+  --font-sans:
+    'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Borders */
+  --border-subtle: 0.5px solid #ede5d7;
+  --border-default: 1px solid #ede5d7;
+  --border-strong: 1.5px solid #6e635a;
+}

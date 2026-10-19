@@ -1,0 +1,40 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--brand-base);
+}
+
+/* Visible focus for keyboard users (WCAG 2.1 AA, 2.4.7). */
+:focus-visible {
+  outline: 2px solid var(--brand-base);
+  outline-offset: 2px;
+}
+
+header {
+  background: var(--bg-card);
+  border-bottom: var(--border-default);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+}
+
+main {
+  padding: 24px;
+}
