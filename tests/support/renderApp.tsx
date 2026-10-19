@@ -5,11 +5,11 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { AppProviders, type AppDependencies } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
-import type { SessionReader } from '@/modules/identity';
+import type { SessionController } from '@/modules/identity';
 
-export function testDependencies(sessionReader: SessionReader): AppDependencies {
+export function testDependencies(session: SessionController): AppDependencies {
   return {
-    sessionReader,
+    session,
     queryClient: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   };
 }

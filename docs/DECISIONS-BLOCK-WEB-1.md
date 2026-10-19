@@ -130,3 +130,74 @@ renovación usa la cookie HttpOnly del backend (acta A68 del backend).
 - Actas A68 (sesión del portal) y A72 (parámetros obligatorios) del backend.
 - `docs/02-design-system/00-design-system.html` del repositorio `docs`.
 - `eslint.config.js`, `scripts/api.mjs`, `tests/setup.ts`, `tests/architecture/dependency-rules.test.ts`.
+
+---
+
+## Acta W2: Sesión del portal
+
+**Estado:** Aprobada (Trigo aprobó el plan el 2026-10-19)
+**Fecha:** 2026-10-19
+**Aprobado por:** Trigo
+**Aplicabilidad:** Módulo `identity`, cliente HTTP de `shared` y composición en `src/app`.
+
+### Contexto
+
+El backend autentica el portal con `POST /auth/portal/login`, `refresh` y `logout` (acta A68 del
+backend): el refresh token viaja en la cookie HttpOnly `cauce_portal_rt` y rota en cada uso, sin
+admitir reuso. El portal debe cerrar la sesión tras 15 minutos sin actividad.
+
+### Decisión
+
+1. **Token solo en memoria.** `SessionService` guarda el access token; nada va a `localStorage`,
+   `sessionStorage` ni IndexedDB. Al cargar, un `refresh` recupera la sesión desde la cookie.
+2. **Renovación serializada.** Una sola renovación en vuelo por pestaña y un Web Lock entre pestañas
+   (con cola local si el navegador no tiene `navigator.locks`). Es proactiva 60 s antes del
+   vencimiento, solo si hubo actividad del usuario; ante un 401 sin `errorCode`, el cliente HTTP
+   renueva una vez y repite la petición una vez, clonada antes de enviarla. Las rutas
+   `/auth/portal/*` quedan fuera del Bearer y del reintento.
+3. **Inactividad.** Actividad es puntero, teclado o rueda, a lo sumo una vez por segundo; las
+   peticiones automáticas no cuentan. Aviso modal a los 13 minutos y cierre a los 15, medidos con
+   marcas de tiempo y recalculados al volver la pestaña visible y al navegar. Esc equivale a
+   «Seguir conectado».
+4. **Logout local siempre.** El estado local se limpia aunque falle la red. Si el token venció o vence
+   en menos de 60 s, se renueva una vez antes de llamar a `logout`; si esa renovación falla, no se
+   llama a `logout`. Así un cierre por inactividad no deja viva la cookie.
+5. **Estado `unavailable`.** Si el arranque falla por red, 5xx o una respuesta fuera del contrato, el
+   portal muestra «Reintentar» en lugar del login. Una caída de red nunca cierra una sesión abierta.
+6. **Canal entre pestañas sin datos.** `BroadcastChannel` transmite solo el tipo de evento y su marca
+   de tiempo: actividad, cierre manual, cierre por inactividad o sesión vencida. Las demás pestañas
+   vuelven a `/login` con el motivo y todas vacían la caché de consultas.
+7. **Un solo mensaje para todo login rechazado.** Los 401 y 400 muestran el mismo texto; el 423 muestra
+   la hora de desbloqueo en Lima, con la fecha si no es hoy. Un 200 con un rol distinto de
+   `nutritionist` se trata como rechazo: se descarta el token y se intenta un logout.
+8. **Temporizadores con dueño.** `IdleMonitor` (inactividad) y `SessionService` (renovación) se
+   encienden al autenticarse y se apagan al cerrar sesión y en `dispose()`; la cuenta regresiva del
+   diálogo es del propio diálogo.
+
+### Dependencia del servidor
+
+El cliente `cauce-web-portal` de Keycloak tiene hoy 1800 s de inactividad. Hasta que B-1 lo baje a
+900 s, el cierre a los 15 minutos lo impone el cliente y el servidor corta a los 30.
+
+### Desviaciones de pruebas
+
+- `tests/setup.ts` simula `showModal` y `close` de `<dialog>`, que jsdom no implementa: solo cambian
+  `open` y emiten `close`.
+- El shim de `Request` reconoce como instancia a todo `Request` de Node (`Symbol.hasInstance`); sin eso,
+  MSW trata como GET un `request.clone()` y el reintento con cuerpo falla.
+
+### Consecuencias
+
+- Los textos del bloqueo (423), del límite de intentos (429), del arranque sin conexión y del diálogo de
+  inactividad son propuestas y quedan pendientes de revisión de redacción.
+- Una nota sin enviar se pierde al cerrar por inactividad; el aviso de los 13 minutos es la protección.
+- El recorrido contra el backend local, la cookie en DevTools y `/api/v1/health` por el proxy quedan
+  para después de B-1.
+
+### Referencias
+
+- `src/modules/identity/application/SessionService.ts`, `IdleMonitor.ts`;
+  `src/shared/infrastructure/apiClient.ts`.
+- `tests/unit/modules/identity/application/SessionService.test.ts`,
+  `tests/integration/routes/session.test.tsx`.
+- Acta A68 y `CONTRACT-IDENTITY-v1.md` §2.12 del backend.

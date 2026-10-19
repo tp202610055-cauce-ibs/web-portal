@@ -19,13 +19,13 @@ const forbidden: [string, string, string, string][] = [
   ],
   [
     'application importing infrastructure',
-    "import { AnonymousSessionReader } from '@/modules/identity/infrastructure/AnonymousSessionReader';\nexport { AnonymousSessionReader };\n",
+    "import { HttpPortalAuthGateway } from '@/modules/identity/infrastructure/HttpPortalAuthGateway';\nexport { HttpPortalAuthGateway };\n",
     'src/modules/identity/application/Probe.ts',
     'no-restricted-imports',
   ],
   [
     'presentation importing infrastructure',
-    "import { AnonymousSessionReader } from '@/modules/identity/infrastructure/AnonymousSessionReader';\nexport { AnonymousSessionReader };\n",
+    "import { HttpPortalAuthGateway } from '@/modules/identity/infrastructure/HttpPortalAuthGateway';\nexport { HttpPortalAuthGateway };\n",
     'src/modules/identity/presentation/Probe.ts',
     'no-restricted-imports',
   ],

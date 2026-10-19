@@ -1,0 +1,153 @@
+/* Atoms from the design system: buttons (section D), inputs (E) and the error toast (I). */
+.btn-primary,
+.btn-secondary,
+.btn-tertiary {
+  min-height: 48px;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--brand-base);
+  color: #ffffff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--brand-strong);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--brand-strong);
+  border: 1.5px solid var(--brand-base);
+}
+
+.btn-tertiary {
+  background: transparent;
+  color: var(--brand-base);
+  border: none;
+  padding: 14px 16px;
+}
+
+.btn-secondary:hover,
+.btn-tertiary:hover {
+  background: var(--brand-soft);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid var(--bg-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--brand-base);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--danger-text);
+}
+
+.field-error {
+  color: var(--danger-text);
+  font-size: 14px;
+}
+
+.notice {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+}
+
+.notice--error {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-left-color: var(--danger-text);
+}
+
+.notice--info {
+  background: var(--info-bg);
+  color: var(--info-text);
+  border-left-color: var(--info-text);
+}
+
+.card {
+  background: var(--bg-card);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+}
+
+.login {
+  max-width: 440px;
+  margin: var(--space-12) auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.shell-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+}
+
+dialog.idle-dialog {
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 440px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

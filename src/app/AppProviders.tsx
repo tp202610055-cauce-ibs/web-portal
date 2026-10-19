@@ -1,10 +1,10 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-import { SessionProvider, type SessionReader } from '@/modules/identity';
+import { SessionProvider, type SessionController } from '@/modules/identity';
 
 export interface AppDependencies {
-  readonly sessionReader: SessionReader;
+  readonly session: SessionController;
   readonly queryClient: QueryClient;
 }
 
@@ -16,7 +16,7 @@ interface AppProvidersProps {
 export function AppProviders({ dependencies, children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={dependencies.queryClient}>
-      <SessionProvider reader={dependencies.sessionReader}>{children}</SessionProvider>
+      <SessionProvider controller={dependencies.session}>{children}</SessionProvider>
     </QueryClientProvider>
   );
 }

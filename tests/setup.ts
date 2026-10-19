@@ -19,11 +19,30 @@ function acceptedByNode(signal: AbortSignal): boolean {
 }
 
 globalThis.Request = class extends NodeRequest {
+  // Native requests (such as clones) must still count as Request for libraries that check instanceof.
+  static override [Symbol.hasInstance](value: unknown): boolean {
+    return value instanceof NodeRequest;
+  }
+
   constructor(input: RequestInfo | URL, init?: RequestInit) {
     const foreignSignal = init?.signal != null && !acceptedByNode(init.signal);
     super(input, foreignSignal ? { ...init, signal: null } : init);
   }
 };
+
+// jsdom has no modal dialogs: showModal and close only toggle `open` and fire the close event.
+if (
+  typeof HTMLDialogElement !== 'undefined' &&
+  typeof HTMLDialogElement.prototype.showModal !== 'function'
+) {
+  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+    this.open = false;
+    this.dispatchEvent(new Event('close'));
+  };
+}
 
 // Any request without a handler fails the test, so no test can reach a real backend.
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
