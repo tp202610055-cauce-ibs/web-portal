@@ -1,4 +1,6 @@
-import type { Session, SessionReader } from '@/modules/identity';
+import { vi } from 'vitest';
+
+import type { Session, SessionController } from '@/modules/identity';
 
 // Synthetic sessions only; never real people or accounts.
 export const anonymousSession: Session = { status: 'anonymous', reason: null };
@@ -23,6 +25,35 @@ export const patientSession: Session = {
   idleWarning: null,
 };
 
-export function fakeSessionReader(session: Session): SessionReader {
-  return { current: () => session, subscribe: () => () => undefined };
+export type FakeSessionController = SessionController & {
+  readonly start: ReturnType<typeof vi.fn<SessionController['start']>>;
+  readonly login: ReturnType<typeof vi.fn<SessionController['login']>>;
+  readonly logout: ReturnType<typeof vi.fn<SessionController['logout']>>;
+  readonly recordActivity: ReturnType<typeof vi.fn<SessionController['recordActivity']>>;
+  readonly checkIdle: ReturnType<typeof vi.fn<SessionController['checkIdle']>>;
+  set(session: Session): void;
+};
+
+// A controller whose state the test drives; every action is a spy that does nothing by default.
+export function fakeSessionController(initial: Session): FakeSessionController {
+  let session = initial;
+  const listeners = new Set<() => void>();
+  return {
+    current: () => session,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    start: vi.fn<SessionController['start']>().mockResolvedValue(undefined),
+    login: vi.fn<SessionController['login']>().mockResolvedValue(undefined),
+    logout: vi.fn<SessionController['logout']>().mockResolvedValue(undefined),
+    recordActivity: vi.fn<SessionController['recordActivity']>(),
+    checkIdle: vi.fn<SessionController['checkIdle']>(),
+    set(next) {
+      session = next;
+      for (const listener of listeners) {
+        listener();
+      }
+    },
+  };
 }

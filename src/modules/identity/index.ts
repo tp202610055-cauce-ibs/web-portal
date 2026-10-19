@@ -8,6 +8,7 @@ export type {
   PortalSessionGrant,
 } from '@/modules/identity/application/PortalAuthGateway';
 export type { RefreshLock } from '@/modules/identity/application/RefreshLock';
+export type { SessionController } from '@/modules/identity/application/SessionController';
 export type { SessionReader } from '@/modules/identity/application/SessionReader';
 export { SessionService } from '@/modules/identity/application/SessionService';
 export { LoginError, SessionEndedError } from '@/modules/identity/domain/LoginError';
@@ -18,5 +19,10 @@ export { BroadcastCrossTabChannel } from '@/modules/identity/infrastructure/Broa
 export { HttpPortalAuthGateway } from '@/modules/identity/infrastructure/HttpPortalAuthGateway';
 export { WebLocksRefreshLock } from '@/modules/identity/infrastructure/WebLocksRefreshLock';
 export { LoginPage } from '@/modules/identity/presentation/LoginPage';
+export { LogoutButton } from '@/modules/identity/presentation/LogoutButton';
 export { RequireNutritionist } from '@/modules/identity/presentation/RequireNutritionist';
-export { SessionProvider, useSession } from '@/modules/identity/presentation/SessionContext';
+export {
+  SessionProvider,
+  useSession,
+  useSessionController,
+} from '@/modules/identity/presentation/SessionContext';

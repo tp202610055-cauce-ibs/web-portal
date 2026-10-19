@@ -27,7 +27,7 @@ export function createAppDependencies(): AppComposition {
     onSessionCleared: () => queryClient.clear(),
   });
   return {
-    sessionReader: sessionService,
+    session: sessionService,
     sessionService,
     queryClient,
     api: createApiClient({ baseUrl, tokens: sessionService }),

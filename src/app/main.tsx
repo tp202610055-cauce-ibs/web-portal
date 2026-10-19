@@ -3,6 +3,7 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@/shared/presentation/styles/tokens.css';
 import '@/shared/presentation/styles/base.css';
+import '@/shared/presentation/styles/components.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

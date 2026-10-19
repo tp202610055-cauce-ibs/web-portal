@@ -30,6 +30,20 @@ globalThis.Request = class extends NodeRequest {
   }
 };
 
+// jsdom has no modal dialogs: showModal and close only toggle `open` and fire the close event.
+if (
+  typeof HTMLDialogElement !== 'undefined' &&
+  typeof HTMLDialogElement.prototype.showModal !== 'function'
+) {
+  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+    this.open = false;
+    this.dispatchEvent(new Event('close'));
+  };
+}
+
 // Any request without a handler fails the test, so no test can reach a real backend.
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 

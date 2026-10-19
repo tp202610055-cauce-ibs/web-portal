@@ -9,7 +9,7 @@ import type {
   PortalSessionGrant,
 } from '@/modules/identity/application/PortalAuthGateway';
 import type { RefreshLock } from '@/modules/identity/application/RefreshLock';
-import type { SessionReader } from '@/modules/identity/application/SessionReader';
+import type { SessionController } from '@/modules/identity/application/SessionController';
 import type { IdlePhase } from '@/modules/identity/domain/IdlePolicy';
 import { LoginError, SessionEndedError } from '@/modules/identity/domain/LoginError';
 import {
@@ -46,7 +46,7 @@ export interface SessionServiceDependencies {
 
 // Portal session: the access token lives only here, in memory. Owns the proactive renewal timer
 // and, through IdleMonitor, the inactivity timer; both start on sign-in and stop on sign-out.
-export class SessionService implements SessionReader, TokenProvider {
+export class SessionService implements SessionController, TokenProvider {
   private readonly deps: SessionServiceDependencies;
   private readonly idle: IdleMonitor;
   private readonly listeners = new Set<() => void>();
