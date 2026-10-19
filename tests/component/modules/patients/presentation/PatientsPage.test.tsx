@@ -9,9 +9,10 @@ import { toAssignedPatients } from '@/modules/patients/infrastructure/assignedPa
 import { ServiceUnavailableError } from '@/shared/domain/errors';
 import { es } from '@/shared/presentation/i18n/es';
 
-import { cp049Panel, patientWithoutData } from '../../../../support/patients';
+import { cp049Panel, fakePatientsGateway, patientWithoutData } from '../../../../support/patients';
 
-function renderPanel(gateway: PatientsGateway) {
+function renderPanel(overrides: Partial<PatientsGateway>) {
+  const gateway = fakePatientsGateway(overrides);
   const router = createMemoryRouter([{ path: '/pacientes', element: <PatientsPage /> }], {
     initialEntries: ['/pacientes'],
   });

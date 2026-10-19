@@ -1,3 +1,4 @@
+import type { PatientsGateway } from '@/modules/patients';
 import type { components } from '@/shared/infrastructure/api/generated/schema';
 
 type AssignedPatientSummary = components['schemas']['AssignedPatientSummary'];
@@ -54,3 +55,13 @@ export const patientWithoutData = assignedPatientBody({
   lastActivityAt: null,
   priorityLevel: 'None',
 });
+
+// A gateway for screen tests: unanswered requests by default, so a test only fakes what it reads.
+export function fakePatientsGateway(overrides: Partial<PatientsGateway> = {}): PatientsGateway {
+  return {
+    listAssigned: () => Promise.resolve([]),
+    getDetail: () => new Promise(() => undefined),
+    getEvolution: () => new Promise(() => undefined),
+    ...overrides,
+  };
+}
