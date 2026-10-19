@@ -68,9 +68,11 @@ describe('routing from the root', () => {
   });
 
   it('root_withProductionComposition_showsLogin', async () => {
-    const { router } = renderApp('/', createAppDependencies());
+    const app = createAppDependencies();
+    const { router } = renderApp('/', app);
 
     expect(await screen.findByRole('heading', { name: es.login.title })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/login');
+    app.sessionService.dispose();
   });
 });

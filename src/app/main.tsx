@@ -19,10 +19,12 @@ if (container === null) {
 }
 
 const router = createBrowserRouter(routes);
+const app = createAppDependencies();
+void app.sessionService.start();
 
 createRoot(container).render(
   <StrictMode>
-    <AppProviders dependencies={createAppDependencies()}>
+    <AppProviders dependencies={app}>
       <RouterProvider router={router} />
     </AppProviders>
   </StrictMode>,
