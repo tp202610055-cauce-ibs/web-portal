@@ -24,6 +24,8 @@ describe('portal session from the root', () => {
   let app: AppComposition | null = null;
 
   function startApp(url = '/') {
+    // Landing on the panel loads the patient list; these tests only need it to exist.
+    server.use(http.get('*/api/v1/nutritionists/me/patients', () => HttpResponse.json([])));
     app = createAppDependencies();
     void app.sessionService.start();
     return { app, ...renderApp(url, app) };

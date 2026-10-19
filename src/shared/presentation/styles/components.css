@@ -151,3 +151,73 @@ dialog.idle-dialog {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* Triage table, skeleton rows and badges (sections F and I); badges always carry text. */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: var(--border-subtle);
+}
+
+.data-table thead th {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.data-table tbody th {
+  font-weight: 500;
+}
+
+.skeleton-row {
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--bg-divider);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge--priority-high {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.badge--priority-medium {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.badge--priority-low,
+.badge--priority-none {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Invitation code: monospaced and selectable in one gesture, so it can be copied by hand. */
+.invitation-code {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  user-select: all;
+}

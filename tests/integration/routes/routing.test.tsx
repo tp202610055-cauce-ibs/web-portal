@@ -52,7 +52,40 @@ describe('routing from the root', () => {
 
     expect(Array.from(menu.querySelectorAll('a')).map((link) => link.textContent)).toEqual([
       es.nav.patients,
+      es.nav.management,
     ]);
+  });
+
+  // CP052 step 2: patient management is reached from the menu.
+  it('managementMenuEntry_withNutritionistSession_opensPatientManagement', async () => {
+    const user = userEvent.setup();
+    const { router } = renderApp('/pacientes', withSession(nutritionistSession));
+
+    await user.click(await screen.findByRole('link', { name: es.nav.management }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: es.management.title }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: es.invitations.generate })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/gestion-pacientes');
+  });
+
+  // CP050 step 7: the empty panel leads to patient management.
+  it('emptyPanelLink_opensPatientManagement', async () => {
+    const user = userEvent.setup();
+    const { router } = renderApp('/pacientes', withSession(nutritionistSession));
+
+    await user.click(await screen.findByRole('link', { name: es.management.goToManagement }));
+
+    expect(router.state.location.pathname).toBe('/gestion-pacientes');
+    expect(screen.getByRole('button', { name: es.invitations.generate })).toBeInTheDocument();
+  });
+
+  it('management_withoutSession_redirectsToLogin', async () => {
+    const { router } = renderApp('/gestion-pacientes', withSession(anonymousSession));
+
+    expect(await screen.findByRole('heading', { name: es.login.title })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
   });
 
   it('topBar_withNutritionistSession_showsTheNameAndSignOut', async () => {
