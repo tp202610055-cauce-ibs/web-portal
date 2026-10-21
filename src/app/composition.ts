@@ -9,6 +9,7 @@ import {
   WebLocksRefreshLock,
 } from '@/modules/identity';
 import { HttpPatientsGateway } from '@/modules/patients';
+import { HttpRecommendationsGateway } from '@/modules/recommendations';
 import { createApiClient, type ApiClient } from '@/shared/infrastructure/apiClient';
 import { SystemClock } from '@/shared/infrastructure/SystemClock';
 
@@ -36,5 +37,6 @@ export function createAppDependencies(): AppComposition {
     api,
     patients: new HttpPatientsGateway(api),
     invitations: new HttpInvitationGateway(api),
+    recommendations: new HttpRecommendationsGateway(api),
   };
 }

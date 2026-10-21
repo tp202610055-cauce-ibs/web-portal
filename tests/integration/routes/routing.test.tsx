@@ -53,6 +53,7 @@ describe('routing from the root', () => {
     expect(Array.from(menu.querySelectorAll('a')).map((link) => link.textContent)).toEqual([
       es.nav.patients,
       es.nav.management,
+      es.nav.reviews,
     ]);
   });
 

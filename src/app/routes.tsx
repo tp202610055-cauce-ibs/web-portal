@@ -4,6 +4,7 @@ import { AppShell } from '@/app/AppShell';
 import { NotFoundPage } from '@/app/NotFoundPage';
 import { LoginPage, RequireNutritionist } from '@/modules/identity';
 import { PatientManagementPage, PatientRecordPage, PatientsPage } from '@/modules/patients';
+import { RecommendationReviewPage, ReviewQueuePage } from '@/modules/recommendations';
 
 // Shared by the browser router and the tests, so every test enters through the real routes.
 export const routes: RouteObject[] = [
@@ -20,6 +21,8 @@ export const routes: RouteObject[] = [
       { path: 'pacientes', element: <PatientsPage /> },
       { path: 'pacientes/:patientId', element: <PatientRecordPage /> },
       { path: 'gestion-pacientes', element: <PatientManagementPage /> },
+      { path: 'revisiones', element: <ReviewQueuePage /> },
+      { path: 'recomendaciones/:recommendationId', element: <RecommendationReviewPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

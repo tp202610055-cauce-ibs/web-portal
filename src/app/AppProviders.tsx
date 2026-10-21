@@ -8,12 +8,14 @@ import {
   type SessionController,
 } from '@/modules/identity';
 import { PatientsProvider, type PatientsGateway } from '@/modules/patients';
+import { RecommendationsProvider, type RecommendationsGateway } from '@/modules/recommendations';
 
 export interface AppDependencies {
   readonly session: SessionController;
   readonly queryClient: QueryClient;
   readonly patients: PatientsGateway;
   readonly invitations: InvitationGateway;
+  readonly recommendations: RecommendationsGateway;
 }
 
 interface AppProvidersProps {
@@ -26,7 +28,11 @@ export function AppProviders({ dependencies, children }: AppProvidersProps) {
     <QueryClientProvider client={dependencies.queryClient}>
       <SessionProvider controller={dependencies.session}>
         <PatientsProvider gateway={dependencies.patients}>
-          <InvitationsProvider gateway={dependencies.invitations}>{children}</InvitationsProvider>
+          <InvitationsProvider gateway={dependencies.invitations}>
+            <RecommendationsProvider gateway={dependencies.recommendations}>
+              {children}
+            </RecommendationsProvider>
+          </InvitationsProvider>
         </PatientsProvider>
       </SessionProvider>
     </QueryClientProvider>
