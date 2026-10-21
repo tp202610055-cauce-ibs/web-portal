@@ -72,6 +72,24 @@ describe('PatientSummary', () => {
     expect(screen.getByText(es.record.noAllergies)).toBeInTheDocument();
   });
 
+  // CP087: the start of the follow-up is the date the patient was linked, in Lima time.
+  it('summary_showsTheAssignmentDateInLimaTime', async () => {
+    renderSummary({
+      ...withData,
+      getDetail: async () => toPatientDetail(detailBody({ assignedAt: '2026-10-02T03:30:00Z' })),
+    });
+
+    await screen.findByText(es.record.linkedSince);
+    expect(field(es.record.linkedSince)).toHaveTextContent('01/10/2026');
+  });
+
+  it('summary_withoutProfile_stillShowsTheAssignmentDate', async () => {
+    renderSummary({ ...withData, getDetail: async () => toPatientDetail(detailWithoutProfile) });
+
+    await screen.findByText(es.record.profilePending);
+    expect(field(es.record.linkedSince)).toHaveTextContent('01/10/2026');
+  });
+
   it('summary_withUnknownBmiCategory_showsOnlyTheNumber', async () => {
     renderSummary({
       ...withData,
