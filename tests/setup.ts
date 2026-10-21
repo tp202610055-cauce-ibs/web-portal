@@ -1,9 +1,12 @@
 import '@testing-library/jest-dom/vitest';
 
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 
 import { server } from './msw/server';
+
+// findBy and waitFor wait up to 3 s: under the full verify load, the default 1 s misses slow renders.
+configure({ asyncUtilTimeout: 3000 });
 
 // Vitest's jsdom environment replaces AbortSignal while Request stays Node's, which rejects that signal.
 // Only the foreign signal is dropped; review this when upgrading vitest or jsdom.
