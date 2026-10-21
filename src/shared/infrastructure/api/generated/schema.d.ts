@@ -1,4 +1,4 @@
-// Generated from openapi/openapi-v1.7.0.json (sha256 b74a80b7e31c89b63abb1ef6d01cff0bfa404e79c1790c21a42765a36c97af7d) by npm run api:generate.
+// Generated from openapi/openapi-v1.8.0.json (sha256 df871dd2ca0ed2c803900b218a91c421153c4b8535d91bb3b79be0438a3cbec1) by npm run api:generate.
 // Do not edit by hand.
 export interface paths {
     "/api/v1/admin/nutritionists": {
@@ -6477,7 +6477,7 @@ export interface components {
         AllergyType: "Allergy" | "Intolerance" | "Sensitivity";
         /** @description Cuerpo de la petición para aprobar una recomendación. */
         ApproveRecommendationRequest: {
-            /** @description Nota clínica de aprobación (entre 20 y 2000 caracteres, US17 CA01). */
+            /** @description Nota clínica de aprobación (entre 10 y 2000 caracteres sin contar los espacios de los extremos, US17 CA01). */
             note: string | null;
         };
         /** @enum {string} */
@@ -6669,7 +6669,7 @@ export interface components {
             description: string | null;
             /** @description Pasos accionables, opcional. */
             steps: string[] | null;
-            /** @description Nota clínica del nutricionista (entre 10 y 2000 caracteres, US29). */
+            /** @description Nota clínica del nutricionista (entre 10 y 2000 caracteres sin contar los espacios de los extremos, US29). */
             clinicalNote: string | null;
             /**
              * Format: date-time
@@ -6897,12 +6897,12 @@ export interface components {
         GenerateClinicalReportRequest: {
             /**
              * Format: date
-             * @description Inicio del período.
+             * @description Inicio del período; puede ser igual al fin y la duración no tiene tope.
              */
             periodStart: string;
             /**
              * Format: date
-             * @description Fin del período.
+             * @description Fin del período, incluido; no puede ser futuro.
              */
             periodEnd: string;
         };
@@ -6968,6 +6968,8 @@ export interface components {
             /** Format: date */
             diagnosisDate: string | null;
             medications: string | null;
+            /** Format: date-time */
+            assignedAt: string;
         };
         GetNutritionistResult: {
             /** Format: uuid */
@@ -7148,7 +7150,7 @@ export interface components {
         };
         /** @description Cuerpo de la petición de aprobación con modificación de una recomendación (US17 CA03). */
         ModifyRecommendationRequest: {
-            /** @description Nota clínica de la modificación (entre 10 y 2000 caracteres, US17 CA03). */
+            /** @description Nota clínica de la modificación (entre 10 y 2000 caracteres sin contar los espacios de los extremos, US17 CA03). */
             clinicalNote: string | null;
             /** @description Nuevos ítems que reemplazan a los actuales, o null para conservarlos. */
             items: components["schemas"]["ModifyRecommendationItemInput"][] | null;
@@ -7290,6 +7292,8 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** @enum {string} */
+        RecommendationAction: "Approve" | "Modify" | "Reject" | "Archive";
         RecommendationDetailDto: {
             /** Format: uuid */
             recommendationId: string;
@@ -7327,6 +7331,7 @@ export interface components {
             archiveReason: components["schemas"]["ArchiveReason"];
             /** Format: date-time */
             validUntil: string | null;
+            allowedActions: components["schemas"]["RecommendationAction"][] | null;
         };
         RecommendationFeedbackDto: {
             /** Format: uuid */
@@ -7426,7 +7431,7 @@ export interface components {
         };
         /** @description Cuerpo de la petición para rechazar una recomendación. */
         RejectRecommendationRequest: {
-            /** @description Motivo del rechazo (entre 10 y 2000 caracteres). */
+            /** @description Motivo del rechazo (entre 10 y 2000 caracteres sin contar los espacios de los extremos). */
             reason: string | null;
         };
         /** @description Cuerpo de la petición de solicitud de restablecimiento de contraseña. */

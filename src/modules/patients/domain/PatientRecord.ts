@@ -31,6 +31,8 @@ export interface PatientDetail {
   readonly medications: string | null;
   readonly onboardingCompleted: boolean;
   readonly allergies: PatientAllergy[];
+  // Start of the active assignment with this nutritionist; records before it predate the link.
+  readonly assignedAt: Date;
 }
 
 export interface IbsSssPoint {
