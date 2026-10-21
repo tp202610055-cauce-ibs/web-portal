@@ -291,3 +291,105 @@ dialog.idle-dialog {
   background: var(--success-bg);
   color: var(--success-text);
 }
+
+.notice--success {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-left-color: var(--success-text);
+}
+
+/* Recommendation status and model confidence (section F); the text always names the level. */
+.badge--status-pending {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.badge--status-approved {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.badge--status-rejected {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.badge--status-delivered {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.badge--status-neutral {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.badge--confidence-high {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.badge--confidence-medium {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.badge--confidence-low {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+/* Review screen: content on the left and the clinical decision panel on the right (mockup P16). */
+.review-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .review-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.review-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 128px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--bg-divider);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--brand-base);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.textarea[aria-invalid='true'] {
+  border-color: var(--danger-text);
+}
+
+.field-hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
