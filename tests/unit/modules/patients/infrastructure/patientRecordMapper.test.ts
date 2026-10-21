@@ -22,6 +22,7 @@ describe('toPatientDetail', () => {
       biologicalSex: 'Female',
       diagnosisDate: '2025-03-14',
       allergies: [{ name: 'Lactosa', type: 'Intolerance', severity: 'Moderate' }],
+      assignedAt: new Date('2026-10-01T15:00:00Z'),
     });
   });
 
@@ -51,6 +52,8 @@ describe('toPatientDetail', () => {
     ['unknown sex', detailBody({ biologicalSex: 'X' as never })],
     ['date with time', detailBody({ diagnosisDate: '2025-03-14T00:00:00Z' })],
     ['no id', { ...detailBody(), patientUserId: '' }],
+    ['no assignment date', { ...detailBody(), assignedAt: undefined }],
+    ['assignment date without zone', detailBody({ assignedAt: '2026-10-01T15:00:00' })],
   ])('toPatientDetail_with%s_failsExplicitly', (_name, payload) => {
     expect(() => toPatientDetail(payload)).toThrow(ContractViolationError);
   });

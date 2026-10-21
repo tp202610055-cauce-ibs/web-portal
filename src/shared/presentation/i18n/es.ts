@@ -96,6 +96,7 @@ export const es = {
     loadError: 'No fue posible cargar la ficha en este momento.',
     retry: 'Reintentar',
     profilePending: 'El paciente todavía no completa su perfil clínico.',
+    linkedSince: 'Vinculado el',
     fields: {
       age: 'Edad',
       sex: 'Sexo biológico',

@@ -131,6 +131,19 @@ renovación usa la cookie HttpOnly del backend (acta A68 del backend).
 - `docs/02-design-system/00-design-system.html` del repositorio `docs`.
 - `eslint.config.js`, `scripts/api.mjs`, `tests/setup.ts`, `tests/architecture/dependency-rules.test.ts`.
 
+### Actualización 2026-10-20
+
+El contrato vendorizado pasa de `openapi-v1.7.0.json` a `openapi/openapi-v1.8.0.json`, y el v1.7.0 se
+retira de `openapi/`. El texto aprobado de esta acta no cambia.
+
+- Origen: merge del backend `b1418ff` (PR #12), tag `v0.17.0-portal-contract`, acta A75 del backend
+  (contrato del portal para el bloque B-1).
+- SHA-256 sobre el contenido LF:
+  `df871dd2ca0ed2c803900b218a91c421153c4b8535d91bb3b79be0438a3cbec1`.
+- Cambio aditivo: `assignedAt` en el detalle del paciente, `allowedActions` (anulable) en el detalle
+  de la recomendación con el enum nuevo `RecommendationAction`, y descripciones de las notas (10 a 2000
+  caracteres sin los espacios de los extremos) y del reporte (sin tope de días).
+
 ---
 
 ## Acta W2: Sesión del portal

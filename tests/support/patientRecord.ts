@@ -30,6 +30,7 @@ export function detailBody(overrides: Partial<Detail> = {}): Detail {
     biologicalSex: 'Female',
     diagnosisDate: '2025-03-14',
     medications: 'Ninguna',
+    assignedAt: '2026-10-01T15:00:00Z',
     ...overrides,
   };
 }

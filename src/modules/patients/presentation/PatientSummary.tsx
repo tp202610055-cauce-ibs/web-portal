@@ -87,6 +87,8 @@ function DetailData({ detail }: { readonly detail: PatientDetail }) {
         <p className="notice notice--info">{record.profilePending}</p>
       )}
       <dl className="card details">
+        <dt>{record.linkedSince}</dt>
+        <dd>{formatLimaDate(detail.assignedAt)}</dd>
         <dt>{record.fields.age}</dt>
         <dd>{orNoData(detail.age === null ? null : record.ageYears(detail.age))}</dd>
         <dt>{record.fields.sex}</dt>

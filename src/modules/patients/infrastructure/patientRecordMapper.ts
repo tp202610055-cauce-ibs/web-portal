@@ -38,6 +38,7 @@ const detail = z.object({
   biologicalSex: z.enum(['Male', 'Female', 'Other']).nullable(),
   diagnosisDate: calendarDate.nullable(),
   medications: z.string().nullable(),
+  assignedAt: instant,
 });
 
 const evolution = z.object({

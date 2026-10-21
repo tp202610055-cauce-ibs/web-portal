@@ -10,6 +10,8 @@ export default mergeConfig(
       setupFiles: ['./tests/setup.ts'],
       include: ['tests/**/*.test.{ts,tsx}'],
       restoreMocks: true,
+      // The first test of a file pays the cold load; under the full verify load it can pass 5 s.
+      testTimeout: 10_000,
       coverage: {
         provider: 'v8',
         include: ['src/**/*.{ts,tsx}'],
