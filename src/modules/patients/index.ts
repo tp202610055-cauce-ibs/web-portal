@@ -9,3 +9,4 @@ export { PatientRecordPage } from '@/modules/patients/presentation/PatientRecord
 export { PatientManagementPage } from '@/modules/patients/presentation/PatientManagementPage';
 export { PatientsProvider } from '@/modules/patients/presentation/PatientsContext';
 export { PatientsPage } from '@/modules/patients/presentation/PatientsPage';
+export { usePatientDetail } from '@/modules/patients/presentation/usePatientRecord';

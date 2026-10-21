@@ -14,6 +14,7 @@ export function AppShell() {
         <nav aria-label={es.nav.label}>
           <NavLink to="/pacientes">{es.nav.patients}</NavLink>
           <NavLink to="/gestion-pacientes">{es.nav.management}</NavLink>
+          <NavLink to="/revisiones">{es.nav.reviews}</NavLink>
         </nav>
         <div className="shell-user">
           <span>
