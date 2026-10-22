@@ -75,8 +75,10 @@ const detail = z.object({
     .array(
       z.object({
         recommendationItemId: z.string().min(1),
+        foodId: z.string().min(1),
         foodName: z.string().nullable(),
         actionType: z.enum(['Suggest', 'Reduce', 'Avoid', 'Substitute']),
+        substituteFoodId: z.string().min(1).nullable(),
         substituteFoodName: z.string().nullable(),
         reasoning: z.string().nullable(),
       }),
@@ -118,8 +120,10 @@ export function toRecommendationDetail(payload: unknown): RecommendationDetail {
     steps: steps ?? [],
     items: (items ?? []).map((item) => ({
       recommendationItemId: item.recommendationItemId,
+      foodId: item.foodId,
       foodName: item.foodName,
       action: item.actionType,
+      substituteFoodId: item.substituteFoodId,
       substituteFoodName: item.substituteFoodName,
       reasoning: item.reasoning,
     })),

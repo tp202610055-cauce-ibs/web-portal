@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ModificationRequest } from '@/modules/recommendations/application/modifyRecommendation';
 import {
   DecisionRefusedError,
   RecommendationAccessDeniedError,
@@ -13,16 +14,32 @@ import { createApiClient } from '@/shared/infrastructure/apiClient';
 import { server } from '../../../../msw/server';
 import {
   detailBody,
+  GARLIC_ID,
   NOTE_CP045,
   NOTE_CP046,
+  NOTE_CP086,
+  ONION_ID,
   PENDING_ID,
   pendingPageBody,
+  STEP_CP086,
 } from '../../../../support/recommendations';
 
 const PENDING = '*/api/v1/recommendations/pending-review';
 const DETAIL = `*/api/v1/recommendations/${PENDING_ID}`;
 const APPROVE = `${DETAIL}/approve`;
 const REJECT = `${DETAIL}/reject`;
+const MODIFY = `${DETAIL}/modify`;
+
+const modification: ModificationRequest = {
+  clinicalNote: NOTE_CP086,
+  title: null,
+  description: null,
+  steps: [STEP_CP086],
+  items: [
+    { foodId: ONION_ID, actionType: 'Reduce', reasoning: null, substituteFoodId: null },
+    { foodId: GARLIC_ID, actionType: 'Avoid', reasoning: 'Fructanos.', substituteFoodId: null },
+  ],
+};
 
 async function refusal(promise: Promise<unknown>): Promise<DecisionRefusedError> {
   const error: unknown = await promise.catch((reason: unknown) => reason);
@@ -210,6 +227,96 @@ describe('HttpRecommendationsGateway', () => {
     server.use(http.post(APPROVE, resolver));
 
     await expect(gateway.approve(PENDING_ID, NOTE_CP045, 'key-1')).rejects.toBeInstanceOf(
+      ServiceUnavailableError,
+    );
+  });
+
+  // The note travels as clinicalNote, next to the edited fields; null keeps what the server has.
+  it('modify_sendsTheModificationAndTheIdempotencyKey', async () => {
+    let received: { key: string | null; body: unknown } | null = null;
+    server.use(
+      http.post(MODIFY, async ({ request }) => {
+        received = { key: request.headers.get('Idempotency-Key'), body: await request.json() };
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await gateway.modify(PENDING_ID, modification, 'key-modify');
+
+    expect(received).toEqual({ key: 'key-modify', body: modification });
+  });
+
+  it('modify_with400OnTheNote_isAnInvalidNote', async () => {
+    server.use(
+      http.post(MODIFY, () =>
+        HttpResponse.json(
+          {
+            errorCode: 'validation_error',
+            errors: { clinicalNote: ['Falta la nota clínica.'], title: ['Título largo.'] },
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    const error = await refusal(gateway.modify(PENDING_ID, modification, 'key-1'));
+
+    expect(error.failure).toEqual({ kind: 'invalid-note', messages: ['Falta la nota clínica.'] });
+  });
+
+  it('modify_with400OnOtherFields_isInvalidContent', async () => {
+    server.use(
+      http.post(MODIFY, () =>
+        HttpResponse.json(
+          { errorCode: 'validation_error', errors: { 'items[0].foodId': ['Falta el alimento.'] } },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    const error = await refusal(gateway.modify(PENDING_ID, modification, 'key-1'));
+
+    expect(error.failure).toEqual({ kind: 'invalid-content', messages: ['Falta el alimento.'] });
+  });
+
+  it('modify_withDomainRule_carriesItsDetail', async () => {
+    const detail =
+      'Alimento sustituto inválido: un ítem de sustitución requiere un alimento sustituto.';
+    server.use(
+      http.post(MODIFY, () =>
+        HttpResponse.json({ errorCode: 'domain_rule_violation', detail }, { status: 400 }),
+      ),
+    );
+
+    const error = await refusal(gateway.modify(PENDING_ID, modification, 'key-1'));
+
+    expect(error.failure).toEqual({ kind: 'invalid-content', messages: [detail] });
+  });
+
+  it('modify_with400WithoutBody_hasNoMessages', async () => {
+    server.use(http.post(MODIFY, () => new HttpResponse(null, { status: 400 })));
+
+    const error = await refusal(gateway.modify(PENDING_ID, modification, 'key-1'));
+
+    expect(error.failure).toEqual({ kind: 'invalid-content', messages: [] });
+  });
+
+  it('modify_with409Expired_isRefusedAsExpired', async () => {
+    server.use(
+      http.post(MODIFY, () =>
+        HttpResponse.json({ errorCode: 'recommendation_expired' }, { status: 409 }),
+      ),
+    );
+
+    const error = await refusal(gateway.modify(PENDING_ID, modification, 'key-1'));
+
+    expect(error.failure).toEqual({ kind: 'expired' });
+  });
+
+  it('modify_withServerError_isUnavailable', async () => {
+    server.use(http.post(MODIFY, () => new HttpResponse(null, { status: 500 })));
+
+    await expect(gateway.modify(PENDING_ID, modification, 'key-1')).rejects.toBeInstanceOf(
       ServiceUnavailableError,
     );
   });

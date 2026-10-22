@@ -5,10 +5,12 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { AppProviders, type AppDependencies } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
+import type { FoodCatalogGateway } from '@/modules/clinical-registry';
 import type { InvitationGateway, SessionController } from '@/modules/identity';
 import type { PatientsGateway } from '@/modules/patients';
 import type { RecommendationsGateway } from '@/modules/recommendations';
 
+import { fakeFoodCatalogGateway } from './foods';
 import { fakePatientsGateway } from './patients';
 import { fakeRecommendationsGateway } from './recommendations';
 
@@ -18,6 +20,7 @@ export function testDependencies(
   patients: PatientsGateway = fakePatientsGateway(),
   invitations: InvitationGateway = { generate: () => new Promise(() => undefined) },
   recommendations: RecommendationsGateway = fakeRecommendationsGateway(),
+  foods: FoodCatalogGateway = fakeFoodCatalogGateway(),
 ): AppDependencies {
   return {
     session,
@@ -25,6 +28,7 @@ export function testDependencies(
     patients,
     invitations,
     recommendations,
+    foods,
   };
 }
 

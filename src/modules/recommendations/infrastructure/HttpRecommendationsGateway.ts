@@ -1,3 +1,4 @@
+import type { ModificationRequest } from '@/modules/recommendations/application/modifyRecommendation';
 import type { RecommendationsGateway } from '@/modules/recommendations/application/RecommendationsGateway';
 import {
   DecisionRefusedError,
@@ -13,7 +14,7 @@ import {
 } from '@/modules/recommendations/infrastructure/recommendationMapper';
 import { ServiceUnavailableError } from '@/shared/domain/errors';
 import type { ApiClient } from '@/shared/infrastructure/apiClient';
-import { toApiProblem } from '@/shared/infrastructure/problemReader';
+import { toApiProblem, type ApiProblem } from '@/shared/infrastructure/problemReader';
 
 interface ApiResult {
   readonly data?: unknown;
@@ -36,12 +37,43 @@ const CONFLICTS: Record<string, DecisionFailure> = {
   idempotency_mismatch: { kind: 'idempotency-mismatch' },
 };
 
+type InvalidReader = (problem: ApiProblem, body: unknown) => DecisionFailure;
+
+const invalidNote: InvalidReader = (problem) => ({
+  kind: 'invalid-note',
+  messages: Object.values(problem.errors ?? {}).flat(),
+});
+
+function problemDetail(body: unknown): string | null {
+  const detail =
+    typeof body === 'object' && body !== null && 'detail' in body ? body.detail : undefined;
+  return typeof detail === 'string' && detail.trim() !== '' ? detail : null;
+}
+
+// Note errors go to the note field; other field errors, or a domain rule's detail, go to the form.
+const invalidModification: InvalidReader = (problem, body) => {
+  const { clinicalNote = [], ...rest } = problem.errors ?? {};
+  if (clinicalNote.length > 0) {
+    return { kind: 'invalid-note', messages: clinicalNote };
+  }
+  const messages = Object.values(rest).flat();
+  const detail = problemDetail(body);
+  return {
+    kind: 'invalid-content',
+    messages: messages.length > 0 || detail === null ? messages : [detail],
+  };
+};
+
 // A 409 without a known code is read as a state change: the screen reloads and shows the new state.
-function decisionFailure(status: number, body: unknown): DecisionFailure | null {
+function decisionFailure(
+  status: number,
+  body: unknown,
+  invalid: InvalidReader,
+): DecisionFailure | null {
   const problem = toApiProblem(status, body);
   switch (status) {
     case 400:
-      return { kind: 'invalid-note', messages: Object.values(problem.errors ?? {}).flat() };
+      return invalid(problem, body);
     case 403:
       return { kind: 'access-denied' };
     case 404:
@@ -53,11 +85,11 @@ function decisionFailure(status: number, body: unknown): DecisionFailure | null 
   }
 }
 
-function decided({ error, response }: ApiResult): void {
+function decided({ error, response }: ApiResult, invalid: InvalidReader = invalidNote): void {
   if (response.ok) {
     return;
   }
-  const failure = decisionFailure(response.status, error);
+  const failure = decisionFailure(response.status, error, invalid);
   throw failure === null ? new ServiceUnavailableError() : new DecisionRefusedError(failure);
 }
 
@@ -117,6 +149,22 @@ export class HttpRecommendationsGateway implements RecommendationsGateway {
           body: { reason },
         }),
       ),
+    );
+  }
+
+  async modify(
+    recommendationId: string,
+    request: ModificationRequest,
+    idempotencyKey: string,
+  ): Promise<void> {
+    decided(
+      await send(() =>
+        this.api.POST('/api/v1/recommendations/{id}/modify', {
+          params: { path: { id: recommendationId }, header: { 'Idempotency-Key': idempotencyKey } },
+          body: { ...request },
+        }),
+      ),
+      invalidModification,
     );
   }
 }

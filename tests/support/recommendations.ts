@@ -18,6 +18,10 @@ export const NOTE_CP046 = 'Riesgo de deficiencia de calcio sin supervisión';
 export const NOTE_NINE = 'Muy poco.';
 export const NOTE_TEN = 'Ajuste OK.';
 
+// CP086: the edited step and the 36-character note.
+export const STEP_CP086 = 'Cocinar la zanahoria al vapor durante 15 minutos';
+export const NOTE_CP086 = 'Ajuste por intolerancia a la lactosa';
+
 export function pendingReviewBody(overrides: Partial<PendingReviewDto> = {}): PendingReviewDto {
   return {
     recommendationId: PENDING_ID,
@@ -172,6 +176,33 @@ export const expiredOnOpen = detailBody({
   allowedActions: [],
 });
 
+export const CARROT_ID = '00000000-0000-4000-8000-0000000000f1';
+export const ONION_ID = '00000000-0000-4000-8000-0000000000f2';
+export const GARLIC_ID = '00000000-0000-4000-8000-0000000000f3';
+
+function reduceItem(index: number, foodId: string, foodName: string) {
+  return {
+    recommendationItemId: `00000000-0000-4000-8000-0000000000c${index}`,
+    foodId,
+    foodName,
+    category: 'Verduras',
+    actionType: 'Reduce' as const,
+    substituteFoodId: null,
+    substituteFoodName: null,
+    reasoning: 'Alto contenido de fructanos.',
+  };
+}
+
+// CP047 and CP086: «Reducir cebolla y ajo», with cooked carrot suggested and one step.
+export const cp086Pending = detailBody({
+  items: [
+    { ...reduceItem(1, CARROT_ID, 'Zanahoria cocida'), actionType: 'Suggest', reasoning: null },
+    reduceItem(2, ONION_ID, 'Cebolla'),
+    reduceItem(3, GARLIC_ID, 'Ajo'),
+  ],
+  steps: ['Cocinar la zanahoria al vapor'],
+});
+
 export function fakeRecommendationsGateway(
   overrides: Partial<RecommendationsGateway> = {},
 ): RecommendationsGateway {
@@ -180,6 +211,7 @@ export function fakeRecommendationsGateway(
     getDetail: () => new Promise(() => undefined),
     approve: () => new Promise(() => undefined),
     reject: () => new Promise(() => undefined),
+    modify: () => new Promise(() => undefined),
     ...overrides,
   };
 }

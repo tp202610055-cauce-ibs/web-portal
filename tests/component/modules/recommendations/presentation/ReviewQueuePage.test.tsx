@@ -122,6 +122,7 @@ describe('ReviewQueuePage', () => {
   it.each([
     ['approved', es.reviews.approved],
     ['rejected', es.reviews.rejected],
+    ['modified', es.reviews.modified],
   ] as const)('queue_afterA%sDecision_confirmsIt', async (outcome, message) => {
     renderQueue(
       { listPendingReview: async () => toPendingReviewPage(pendingPageBody([])) },
