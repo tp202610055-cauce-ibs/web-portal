@@ -1,0 +1,35 @@
+# Outer routes of the portal site, for the deployment conversation to adopt; names follow the D-1 compose.
+# Only the Mailpit user and password hash are placeholders, read from the environment when Caddy starts.
+
+# The backend reaches Keycloak on the internal network (Keycloak__InternalBaseUrl=http://keycloak:8080),
+# so blocking /admin here does not affect its admin calls.
+portal.{$DOMAIN} {
+	# One week while the pilot settles; no includeSubDomains and no preload.
+	header Strict-Transport-Security "max-age=604800"
+	encode zstd gzip
+
+	# Private from the internet: the Keycloak admin console and API, and the master realm.
+	# The backend asks realm cauce for its token, never master.
+	@private path /admin /admin/* /realms/master /realms/master/*
+
+	# route keeps the written order, so the private paths are refused before any proxy runs.
+	route {
+		respond @private 404
+
+		reverse_proxy /api/* api:8080
+
+		reverse_proxy /realms/* keycloak:8080
+		reverse_proxy /resources/* keycloak:8080
+
+		# Mailpit runs with MP_WEBROOT=/mail/; the bare /mail is sent there instead of reaching the portal 404.
+		redir /mail /mail/ 308
+		# The password hash comes from caddy hash-password.
+		basic_auth /mail/* {
+			{$PORTAL_MAIL_USER} {$PORTAL_MAIL_PASSWORD_HASH}
+		}
+		reverse_proxy /mail/* mailpit:8025
+
+		# Everything else is the portal image, which answers 404 itself for unknown service paths.
+		reverse_proxy portal-web:8080
+	}
+}
