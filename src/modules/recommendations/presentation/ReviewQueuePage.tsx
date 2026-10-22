@@ -10,7 +10,9 @@ import { es } from '@/shared/presentation/i18n/es';
 
 const SKELETON_ROWS = 3;
 
-export type ReviewOutcome = 'approved' | 'rejected';
+const OUTCOMES = ['approved', 'rejected', 'modified'] as const;
+
+export type ReviewOutcome = (typeof OUTCOMES)[number];
 
 // The detail returns here with the outcome in the navigation state; it never carries clinical data.
 export function reviewOutcomeState(outcome: ReviewOutcome) {
@@ -22,7 +24,7 @@ function outcomeOf(state: unknown): ReviewOutcome | null {
     return null;
   }
   const { reviewOutcome } = state;
-  return reviewOutcome === 'approved' || reviewOutcome === 'rejected' ? reviewOutcome : null;
+  return OUTCOMES.find((outcome) => outcome === reviewOutcome) ?? null;
 }
 
 function formatInstant(value: Date): string {

@@ -6,6 +6,10 @@ import {
   type DecisionAttempt,
 } from '@/modules/recommendations/application/decisionKey';
 import {
+  submitModification,
+  type ModificationRequest,
+} from '@/modules/recommendations/application/modifyRecommendation';
+import {
   getRecommendation,
   submitDecision,
   type ReviewDecision,
@@ -14,13 +18,19 @@ import { DecisionRefusedError } from '@/modules/recommendations/domain/Recommend
 import { useRecommendationsGateway } from '@/modules/recommendations/presentation/RecommendationsContext';
 import { RECOMMENDATIONS_QUERY_KEY } from '@/modules/recommendations/presentation/useReviewQueue';
 
-export interface DecisionInput {
-  readonly decision: ReviewDecision;
-  readonly note: string;
-}
+export type DecisionInput =
+  | { readonly decision: ReviewDecision; readonly note: string }
+  | { readonly decision: 'modify'; readonly modification: ModificationRequest };
 
 function detailKey(recommendationId: string) {
   return [...RECOMMENDATIONS_QUERY_KEY, 'detail', recommendationId] as const;
+}
+
+// The Idempotency-Key follows what is sent: the same content reuses it, a different one gets a new key.
+function contentOf(input: DecisionInput): string {
+  return input.decision === 'modify'
+    ? `modify:${JSON.stringify(input.modification)}`
+    : `${input.decision}:${input.note.trim()}`;
 }
 
 // Opening the detail may expire it on the server; the screen shows whatever state arrives.
@@ -39,17 +49,17 @@ export function useReviewDecision(recommendationId: string) {
   const queryClient = useQueryClient();
   const attempt = useRef<DecisionAttempt | null>(null);
   return useMutation({
-    mutationFn: ({ decision, note }: DecisionInput) => {
-      const current = attemptFor(attempt.current, `${decision}:${note.trim()}`, () =>
-        crypto.randomUUID(),
-      );
+    mutationFn: (input: DecisionInput) => {
+      const current = attemptFor(attempt.current, contentOf(input), () => crypto.randomUUID());
       attempt.current = current;
-      return submitDecision(gateway, {
-        decision,
-        recommendationId,
-        note,
-        idempotencyKey: current.key,
-      });
+      return input.decision === 'modify'
+        ? submitModification(gateway, recommendationId, input.modification, current.key)
+        : submitDecision(gateway, {
+            decision: input.decision,
+            recommendationId,
+            note: input.note,
+            idempotencyKey: current.key,
+          });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
     onError: (error) => {

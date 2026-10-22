@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 
 import type { ReviewDecision } from '@/modules/recommendations/application/reviewRecommendations';
 import {
@@ -9,8 +9,14 @@ import {
   DecisionRefusedError,
   type RecommendationAction,
 } from '@/modules/recommendations/domain/Recommendation';
-import type { DecisionInput } from '@/modules/recommendations/presentation/useRecommendationReview';
 import { es } from '@/shared/presentation/i18n/es';
+
+export type PanelDecision = ReviewDecision | 'modify';
+
+export interface PanelSubmission {
+  readonly decision: PanelDecision;
+  readonly note: string;
+}
 
 const PROBLEM_MESSAGE: Record<ClinicalNoteProblem, string> = {
   empty: es.decision.noteEmpty,
@@ -18,12 +24,34 @@ const PROBLEM_MESSAGE: Record<ClinicalNoteProblem, string> = {
   'too-long': es.decision.noteTooLong,
 };
 
+const ACTION_OF: Record<PanelDecision, RecommendationAction> = {
+  approve: 'Approve',
+  modify: 'Modify',
+  reject: 'Reject',
+};
+
+const LABEL: Record<PanelDecision, string> = {
+  approve: es.decision.approve,
+  modify: es.decision.modify,
+  reject: es.decision.reject,
+};
+
+const CONFIRM: Record<PanelDecision, string> = {
+  approve: es.decision.confirmApprove,
+  modify: es.decision.confirmModify,
+  reject: es.decision.confirmReject,
+};
+
+const ORDER: readonly PanelDecision[] = ['approve', 'modify', 'reject'];
+
 interface ReviewDecisionPanelProps {
   readonly actions: RecommendationAction[];
   readonly submitting: boolean;
   readonly error: unknown;
-  readonly onSubmit: (input: DecisionInput) => void;
+  readonly blockedMessage: string | null;
+  readonly onSubmit: (input: PanelSubmission) => void;
   readonly onDismissError: () => void;
+  readonly onDecisionChange: (decision: PanelDecision | null) => void;
 }
 
 // The server's own text when it refuses the note; the client check only warns before sending.
@@ -39,26 +67,41 @@ function retryMessage(error: unknown): string | null {
   if (error === null) {
     return null;
   }
-  if (error instanceof DecisionRefusedError) {
-    return error.failure.kind === 'idempotency-mismatch' ? es.decision.retryAgain : null;
+  if (!(error instanceof DecisionRefusedError)) {
+    return es.generic.error;
   }
-  return es.generic.error;
+  switch (error.failure.kind) {
+    case 'idempotency-mismatch':
+      return es.decision.retryAgain;
+    case 'invalid-content':
+      return error.failure.messages.join(' ') || es.generic.error;
+    default:
+      return null;
+  }
 }
 
-// Approve and reject appear only when allowedActions lists them; both need a clinical note.
+// Each decision appears only when allowedActions lists it; all three need a clinical note.
 export function ReviewDecisionPanel({
   actions,
   submitting,
   error,
+  blockedMessage,
   onSubmit,
   onDismissError,
+  onDecisionChange,
 }: ReviewDecisionPanelProps) {
-  const [decision, setDecision] = useState<ReviewDecision | null>(null);
+  const [decision, setDecision] = useState<PanelDecision | null>(null);
   const [note, setNote] = useState('');
   const [problem, setProblem] = useState<ClinicalNoteProblem | null>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const approveRef = useRef<HTMLButtonElement>(null);
+  const modifyRef = useRef<HTMLButtonElement>(null);
   const rejectRef = useRef<HTMLButtonElement>(null);
+  const openers: Record<PanelDecision, RefObject<HTMLButtonElement | null>> = {
+    approve: approveRef,
+    modify: modifyRef,
+    reject: rejectRef,
+  };
 
   useEffect(() => {
     if (decision !== null) {
@@ -66,24 +109,25 @@ export function ReviewDecisionPanel({
     }
   }, [decision]);
 
-  const canApprove = actions.includes('Approve');
-  const canReject = actions.includes('Reject');
-  if (!canApprove && !canReject) {
+  const available = ORDER.filter((option) => actions.includes(ACTION_OF[option]));
+  if (available.length === 0) {
     return null;
   }
 
-  function open(next: ReviewDecision) {
+  function open(next: PanelDecision) {
     setDecision(next);
     setProblem(null);
     onDismissError();
+    onDecisionChange(next);
   }
 
   function cancel() {
-    const opener = decision === 'approve' ? approveRef : rejectRef;
+    const opener = decision === null ? null : openers[decision];
     setDecision(null);
     setProblem(null);
     onDismissError();
-    opener.current?.focus();
+    onDecisionChange(null);
+    opener?.current?.focus();
   }
 
   function changeNote(value: string) {
@@ -109,7 +153,7 @@ export function ReviewDecisionPanel({
   }
 
   const fieldMessage = problem === null ? serverNoteMessage(error) : PROBLEM_MESSAGE[problem];
-  const formMessage = retryMessage(error);
+  const formMessage = blockedMessage ?? retryMessage(error);
   const describedBy = ['decision-note-hint', fieldMessage === null ? null : 'decision-note-error']
     .filter((id) => id !== null)
     .join(' ');
@@ -117,31 +161,22 @@ export function ReviewDecisionPanel({
   return (
     <div className="stack">
       <div className="actions">
-        {canApprove && (
+        {available.map((option) => (
           <button
-            ref={approveRef}
+            key={option}
+            ref={openers[option]}
             type="button"
-            className={decision === 'approve' ? 'btn-primary' : 'btn-secondary'}
-            aria-expanded={decision === 'approve'}
-            onClick={() => open('approve')}
+            className={decision === option ? 'btn-primary' : 'btn-secondary'}
+            aria-expanded={decision === option}
+            onClick={() => open(option)}
           >
-            {es.decision.approve}
+            {LABEL[option]}
           </button>
-        )}
-        {canReject && (
-          <button
-            ref={rejectRef}
-            type="button"
-            className={decision === 'reject' ? 'btn-primary' : 'btn-secondary'}
-            aria-expanded={decision === 'reject'}
-            onClick={() => open('reject')}
-          >
-            {es.decision.reject}
-          </button>
-        )}
+        ))}
       </div>
       {decision !== null && (
         <form className="stack" noValidate onSubmit={submit}>
+          {decision === 'modify' && <p className="field-hint">{es.decision.modifyHint}</p>}
           {formMessage !== null && (
             <p role="alert" className="notice notice--error">
               {formMessage}
@@ -172,11 +207,7 @@ export function ReviewDecisionPanel({
               {es.decision.cancel}
             </button>
             <button type="submit" className="btn-primary" disabled={submitting}>
-              {submitting
-                ? es.decision.sending
-                : decision === 'approve'
-                  ? es.decision.confirmApprove
-                  : es.decision.confirmReject}
+              {submitting ? es.decision.sending : CONFIRM[decision]}
             </button>
           </div>
         </form>

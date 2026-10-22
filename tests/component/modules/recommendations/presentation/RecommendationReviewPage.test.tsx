@@ -129,7 +129,7 @@ describe('RecommendationReviewPage', () => {
     ]);
   });
 
-  it('pendingRecommendation_offersOnlyApproveAndReject', async () => {
+  it('pendingRecommendation_offersTheThreeDecisionsInTheMockupOrder', async () => {
     renderReview({ getDetail: async () => pending });
 
     const panel = await screen.findByRole('complementary', { name: es.decision.title });
@@ -138,7 +138,7 @@ describe('RecommendationReviewPage', () => {
       within(panel)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual([es.decision.approve, es.decision.reject]);
+    ).toEqual([es.decision.approve, es.decision.modify, es.decision.reject]);
     expect(within(panel).queryByRole('status')).not.toBeInTheDocument();
   });
 

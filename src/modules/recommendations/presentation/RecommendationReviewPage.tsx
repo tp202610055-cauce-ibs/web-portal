@@ -1,5 +1,10 @@
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
+import {
+  buildModification,
+  hasChanges,
+} from '@/modules/recommendations/application/modifyRecommendation';
 import { isRecommendationId } from '@/modules/recommendations/application/reviewRecommendations';
 import {
   DecisionRefusedError,
@@ -7,9 +12,23 @@ import {
   RecommendationNotFoundError,
   type RecommendationStatus,
 } from '@/modules/recommendations/domain/Recommendation';
+import {
+  checkDraft,
+  draftFrom,
+  hasProblems,
+  type RecommendationDraft,
+} from '@/modules/recommendations/domain/recommendationDraft';
 import { RecommendationContent } from '@/modules/recommendations/presentation/RecommendationContent';
-import { ReviewDecisionPanel } from '@/modules/recommendations/presentation/ReviewDecisionPanel';
-import { reviewOutcomeState } from '@/modules/recommendations/presentation/ReviewQueuePage';
+import { RecommendationEditor } from '@/modules/recommendations/presentation/RecommendationEditor';
+import {
+  ReviewDecisionPanel,
+  type PanelDecision,
+  type PanelSubmission,
+} from '@/modules/recommendations/presentation/ReviewDecisionPanel';
+import {
+  reviewOutcomeState,
+  type ReviewOutcome,
+} from '@/modules/recommendations/presentation/ReviewQueuePage';
 import {
   useRecommendation,
   useReviewDecision,
@@ -65,19 +84,68 @@ export function RecommendationReviewPage() {
   return <RecommendationReview recommendationId={recommendationId} />;
 }
 
+const OUTCOME: Record<PanelDecision, ReviewOutcome> = {
+  approve: 'approved',
+  modify: 'modified',
+  reject: 'rejected',
+};
+
 function RecommendationReview({ recommendationId }: { readonly recommendationId: string }) {
   const detail = useRecommendation(recommendationId);
   const decision = useReviewDecision(recommendationId);
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<RecommendationDraft | null>(null);
+  const [showDraftProblems, setShowDraftProblems] = useState(false);
+  const [blocked, setBlocked] = useState<string | null>(null);
   const alert = decisionAlert(decision.error);
 
-  function submit(input: DecisionInput) {
+  function send(input: DecisionInput) {
     decision.mutate(input, {
       onSuccess: () =>
-        void navigate('/revisiones', {
-          state: reviewOutcomeState(input.decision === 'approve' ? 'approved' : 'rejected'),
-        }),
+        void navigate('/revisiones', { state: reviewOutcomeState(OUTCOME[input.decision]) }),
     });
+  }
+
+  // The draft is kept in memory while the screen stays open, also after cancelling or a failed attempt.
+  function changeDecision(next: PanelDecision | null) {
+    setEditing(next === 'modify');
+    setBlocked(null);
+    if (next === 'modify' && detail.data !== undefined) {
+      const original = detail.data;
+      setDraft((current) => current ?? draftFrom(original));
+    }
+  }
+
+  function changeDraft(next: RecommendationDraft) {
+    setDraft(next);
+    setBlocked(null);
+  }
+
+  function dismissError() {
+    decision.reset();
+    setBlocked(null);
+  }
+
+  function submit({ decision: chosen, note }: PanelSubmission) {
+    if (chosen !== 'modify') {
+      send({ decision: chosen, note });
+      return;
+    }
+    if (detail.data === undefined || draft === null) {
+      return;
+    }
+    if (hasProblems(checkDraft(detail.data, draft))) {
+      setShowDraftProblems(true);
+      setBlocked(es.decision.reviewChanges);
+      return;
+    }
+    const modification = buildModification(detail.data, draft, note);
+    if (!hasChanges(modification)) {
+      setBlocked(es.decision.noChanges);
+      return;
+    }
+    send({ decision: 'modify', modification });
   }
 
   return (
@@ -97,7 +165,16 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
         <LoadFailure error={detail.error} onRetry={() => void detail.refetch()} />
       ) : (
         <div className="review-layout">
-          <RecommendationContent detail={detail.data} />
+          {editing && draft !== null && detail.data.allowedActions.includes('Modify') ? (
+            <RecommendationEditor
+              original={detail.data}
+              draft={draft}
+              showProblems={showDraftProblems}
+              onChange={changeDraft}
+            />
+          ) : (
+            <RecommendationContent detail={detail.data} />
+          )}
           <aside aria-labelledby="decision-title" className="card stack">
             <h2 id="decision-title">{es.decision.title}</h2>
             <StateNotice status={detail.data.status} alert={alert} />
@@ -105,8 +182,10 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
               actions={detail.data.allowedActions}
               submitting={decision.isPending}
               error={decision.error}
+              blockedMessage={blocked}
               onSubmit={submit}
-              onDismissError={decision.reset}
+              onDismissError={dismissError}
+              onDecisionChange={changeDecision}
             />
           </aside>
         </div>
