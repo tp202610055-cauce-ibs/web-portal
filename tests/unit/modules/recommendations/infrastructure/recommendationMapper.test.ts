@@ -45,8 +45,10 @@ describe('toRecommendationDetail', () => {
     expect(detail.allowedActions).toEqual(['Approve', 'Modify', 'Reject']);
     expect(detail.items[2]).toEqual({
       recommendationItemId: '00000000-0000-4000-8000-0000000000e3',
+      foodId: '00000000-0000-4000-8000-0000000000f3',
       foodName: 'Ajo',
       action: 'Substitute',
+      substituteFoodId: '00000000-0000-4000-8000-0000000000f4',
       substituteFoodName: 'Aceite infusionado con ajo',
       reasoning: 'El aceite conserva el sabor sin los fructanos.',
     });
@@ -83,6 +85,24 @@ describe('toRecommendationDetail', () => {
     expect(detail.items).toEqual([]);
     expect(detail.steps).toEqual([]);
     expect(detail.supportingData.topHighFodmapFoods).toEqual([]);
+  });
+
+  // The ids travel back unchanged when the food list is modified; the client never rebuilds them.
+  it('detail_keepsTheFoodIdsOfEachItem', () => {
+    const detail = toRecommendationDetail(detailBody());
+
+    expect(detail.items.map((item) => [item.foodId, item.substituteFoodId])).toEqual([
+      ['00000000-0000-4000-8000-0000000000f1', null],
+      ['00000000-0000-4000-8000-0000000000f2', null],
+      ['00000000-0000-4000-8000-0000000000f3', '00000000-0000-4000-8000-0000000000f4'],
+    ]);
+  });
+
+  it('detail_withItemWithoutFoodId_isContractViolation', () => {
+    const [item] = detailBody().items ?? [];
+    const body = detailBody({ items: [{ ...(item as NonNullable<typeof item>), foodId: '' }] });
+
+    expect(() => toRecommendationDetail(body)).toThrow(ContractViolationError);
   });
 
   it('manualDetail_withEmptyModelName_hasNoModel', () => {

@@ -33,10 +33,13 @@ export interface PendingReviewPage {
   readonly totalCount: number;
 }
 
+// The food ids come from the server and travel back unchanged when the list is modified.
 export interface RecommendationItem {
   readonly recommendationItemId: string;
+  readonly foodId: string;
   readonly foodName: string | null;
   readonly action: FoodAction;
+  readonly substituteFoodId: string | null;
   readonly substituteFoodName: string | null;
   readonly reasoning: string | null;
 }
@@ -94,7 +97,8 @@ export type DecisionFailure =
   | { readonly kind: 'idempotency-mismatch' }
   | { readonly kind: 'access-denied' }
   | { readonly kind: 'not-found' }
-  | { readonly kind: 'invalid-note'; readonly messages: string[] };
+  | { readonly kind: 'invalid-note'; readonly messages: string[] }
+  | { readonly kind: 'invalid-content'; readonly messages: string[] };
 
 // The server refused an approval or a rejection; the messages are the server's own texts.
 export class DecisionRefusedError extends Error {
