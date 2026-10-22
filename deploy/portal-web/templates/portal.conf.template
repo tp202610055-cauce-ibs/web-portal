@@ -1,0 +1,49 @@
+# Serves only the portal build (dist/) on 8080; the outer proxy owns TLS, HSTS and the API routes.
+# Rendered at start-up by the image entrypoint; only defined environment variables are replaced.
+server {
+    listen 8080 default_server;
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+    absolute_redirect off;
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types application/javascript text/css application/json image/svg+xml;
+
+    # Paths that belong to other services: a real 404 here, never the SPA shell.
+    location ~ ^/(api|realms|resources|mail|admin)(/|$) {
+        include /etc/nginx/conf.d/security-headers.inc;
+        return 404;
+    }
+
+    # Hashed build files: cached for a year; a missing one is a 404, not index.html.
+    # Without "always" the cache header goes only on successful answers, so a 404 is never cached.
+    location /assets/ {
+        include /etc/nginx/conf.d/security-headers.inc;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # The shell is always revalidated so a new release is picked up on the next load.
+    location = /index.html {
+        include /etc/nginx/conf.d/security-headers.inc;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location = /healthz {
+        access_log off;
+        include /etc/nginx/conf.d/security-headers.inc;
+        add_header Cache-Control "no-store" always;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Client-side routes: any other path loads the shell and the router takes over.
+    location / {
+        include /etc/nginx/conf.d/security-headers.inc;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri /index.html;
+    }
+}
