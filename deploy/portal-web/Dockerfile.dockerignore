@@ -1,0 +1,16 @@
+# Allow-list: everything is excluded except what the image build reads.
+*
+!package.json
+!package-lock.json
+!index.html
+!tsconfig.json
+!tsconfig.app.json
+!tsconfig.node.json
+!tsconfig.test.json
+!vite.config.ts
+!vitest.config.ts
+!src/
+!tests/
+!deploy/portal-web/05-require-files-origin.sh
+!deploy/portal-web/25-require-rendered-config.sh
+!deploy/portal-web/templates/
