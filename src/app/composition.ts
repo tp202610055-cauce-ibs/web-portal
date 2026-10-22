@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
 import type { AppDependencies } from '@/app/AppProviders';
+import { HttpFoodCatalogGateway } from '@/modules/clinical-registry';
 import {
   BroadcastCrossTabChannel,
   HttpInvitationGateway,
@@ -38,5 +39,6 @@ export function createAppDependencies(): AppComposition {
     patients: new HttpPatientsGateway(api),
     invitations: new HttpInvitationGateway(api),
     recommendations: new HttpRecommendationsGateway(api),
+    foods: new HttpFoodCatalogGateway(api),
   };
 }

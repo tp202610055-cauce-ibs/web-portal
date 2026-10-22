@@ -1,6 +1,7 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
+import { FoodCatalogProvider, type FoodCatalogGateway } from '@/modules/clinical-registry';
 import {
   InvitationsProvider,
   SessionProvider,
@@ -16,6 +17,7 @@ export interface AppDependencies {
   readonly patients: PatientsGateway;
   readonly invitations: InvitationGateway;
   readonly recommendations: RecommendationsGateway;
+  readonly foods: FoodCatalogGateway;
 }
 
 interface AppProvidersProps {
@@ -30,7 +32,7 @@ export function AppProviders({ dependencies, children }: AppProvidersProps) {
         <PatientsProvider gateway={dependencies.patients}>
           <InvitationsProvider gateway={dependencies.invitations}>
             <RecommendationsProvider gateway={dependencies.recommendations}>
-              {children}
+              <FoodCatalogProvider gateway={dependencies.foods}>{children}</FoodCatalogProvider>
             </RecommendationsProvider>
           </InvitationsProvider>
         </PatientsProvider>

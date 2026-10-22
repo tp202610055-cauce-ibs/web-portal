@@ -8,19 +8,27 @@ import { es } from '@/shared/presentation/i18n/es';
 import type { components } from '@/shared/infrastructure/api/generated/schema';
 
 import { server } from '../../msw/server';
+import { DAIRY_ID, dairyResults } from '../../support/foods';
 import { detailBody as patientDetailBody } from '../../support/patientRecord';
 import { portalSessionBody } from '../../support/portalSession';
 import {
+  CARROT_ID,
+  cp086Pending,
   detailBody,
   expiredOnOpen,
+  GARLIC_ID,
   NOTE_CP045,
   NOTE_CP046,
+  NOTE_CP086,
   NOTE_NINE,
+  NOTE_TEN,
+  ONION_ID,
   OVERDUE_ID,
   PENDING_ID,
   pendingPageBody,
   queueItems,
   REVIEW_PATIENT_ID,
+  STEP_CP086,
 } from '../../support/recommendations';
 import { renderApp, testDependencies } from '../../support/renderApp';
 import { anonymousSession, fakeSessionController } from '../../support/sessions';
@@ -39,7 +47,7 @@ interface Decision {
 function reviewBackend() {
   let pending: PendingReviewDto[] = [...queueItems];
   const decisions: Decision[] = [];
-  const decide = (kind: 'approve' | 'reject') =>
+  const decide = (kind: 'approve' | 'reject' | 'modify') =>
     http.post(`*/api/v1/recommendations/:id/${kind}`, async ({ request, params }) => {
       decisions.push({
         path: kind,
@@ -70,8 +78,22 @@ function reviewBackend() {
     ),
     decide('approve'),
     decide('reject'),
+    decide('modify'),
   );
   return decisions;
+}
+
+// The catalog answers every search with the same foods and records each query it received.
+function foodCatalog() {
+  const queries: (string | null)[] = [];
+  server.use(
+    http.get('*/api/v1/foods/search', ({ request }) => {
+      queries.push(new URL(request.url).searchParams.get('q'));
+      return HttpResponse.json(dairyResults);
+    }),
+    http.get(`*/api/v1/recommendations/${PENDING_ID}`, () => HttpResponse.json(cp086Pending)),
+  );
+  return queries;
 }
 
 function noteField(): HTMLElement {
@@ -198,6 +220,106 @@ describe('review screens from the root', () => {
     expect(document.title).not.toContain('Paciente Prueba A');
     expect(localStorage).toHaveLength(0);
     expect(sessionStorage).toHaveLength(0);
+  });
+
+  // CP047 steps 1 to 8: the queue, the modification kept across refused notes, then approved with changes.
+  it('queueRow_cp047_modifiesOnlyWithAValidNote', async () => {
+    const user = userEvent.setup();
+    const decisions = reviewBackend();
+    const queries = foodCatalog();
+    startApp('/revisiones');
+
+    await user.click(await screen.findByRole('link', { name: 'Paciente Prueba A' }));
+    await user.click(await screen.findByRole('button', { name: es.decision.modify }));
+    await user.type(screen.getByRole('searchbox', { name: es.editor.addFood }), ' lá ');
+    await user.click(await screen.findByRole('button', { name: /Lácteos con lactosa/ }));
+    await user.click(screen.getByRole('button', { name: es.decision.confirmModify }));
+    expect(screen.getByRole('alert')).toHaveTextContent(es.decision.noteEmpty);
+    await user.type(noteField(), NOTE_NINE);
+    await user.click(screen.getByRole('button', { name: es.decision.confirmModify }));
+    expect(screen.getByRole('alert')).toHaveTextContent(es.decision.noteTooShort);
+    expect(decisions).toHaveLength(0);
+
+    await user.clear(noteField());
+    await user.type(noteField(), NOTE_TEN);
+    await user.click(screen.getByRole('button', { name: es.decision.confirmModify }));
+
+    expect(await screen.findByText(es.reviews.modified)).toHaveAttribute('role', 'status');
+    expect(queries).toEqual(['lá']);
+    expect(decisions).toHaveLength(1);
+    expect(decisions[0]?.path).toBe('modify');
+    expect(decisions[0]?.key).toMatch(UUID);
+    expect(decisions[0]?.body).toMatchObject({
+      clinicalNote: NOTE_TEN,
+      title: null,
+      description: null,
+      steps: null,
+    });
+    const table = await screen.findByRole('table');
+    expect(within(table).queryByRole('link', { name: 'Paciente Prueba A' })).toBeNull();
+  });
+
+  // CP086 steps 3 to 7: dairy to reduce, the new step and the 36-character note reach the server.
+  it('detail_cp086_sendsTheModifiedFoodsAndStep', async () => {
+    const user = userEvent.setup();
+    const decisions = reviewBackend();
+    foodCatalog();
+    startApp(`/recomendaciones/${PENDING_ID}`);
+
+    await user.click(await screen.findByRole('button', { name: es.decision.modify }));
+    await user.type(screen.getByRole('searchbox', { name: es.editor.addFood }), 'lácteos');
+    await user.click(await screen.findByRole('button', { name: /Lácteos con lactosa/ }));
+    const step = screen.getByRole('textbox', { name: es.editor.stepLabel(1) });
+    await user.clear(step);
+    await user.type(step, STEP_CP086);
+    await user.type(noteField(), NOTE_CP086);
+    await user.click(screen.getByRole('button', { name: es.decision.confirmModify }));
+
+    expect(await screen.findByText(es.reviews.modified)).toHaveAttribute('role', 'status');
+    expect(decisions[0]?.body).toEqual({
+      clinicalNote: NOTE_CP086,
+      title: null,
+      description: null,
+      steps: [STEP_CP086],
+      items: [
+        { foodId: CARROT_ID, actionType: 'Suggest', reasoning: null, substituteFoodId: null },
+        {
+          foodId: ONION_ID,
+          actionType: 'Reduce',
+          reasoning: 'Alto contenido de fructanos.',
+          substituteFoodId: null,
+        },
+        {
+          foodId: GARLIC_ID,
+          actionType: 'Reduce',
+          reasoning: 'Alto contenido de fructanos.',
+          substituteFoodId: null,
+        },
+        { foodId: DAIRY_ID, actionType: 'Reduce', reasoning: null, substituteFoodId: null },
+      ],
+    });
+  });
+
+  it('modify_withDomainRuleFromTheServer_showsItsDetail', async () => {
+    const user = userEvent.setup();
+    reviewBackend();
+    foodCatalog();
+    const detail =
+      'Alimento sustituto inválido: el alimento sustituto no puede ser el mismo alimento.';
+    server.use(
+      http.post(`*/api/v1/recommendations/${PENDING_ID}/modify`, () =>
+        HttpResponse.json({ errorCode: 'domain_rule_violation', detail }, { status: 400 }),
+      ),
+    );
+    startApp(`/recomendaciones/${PENDING_ID}`);
+
+    await user.click(await screen.findByRole('button', { name: es.decision.modify }));
+    await user.click(screen.getByRole('button', { name: es.editor.removeItem('Ajo') }));
+    await user.type(noteField(), NOTE_TEN);
+    await user.click(screen.getByRole('button', { name: es.decision.confirmModify }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(detail);
+    expect(app?.sessionService.current().status).toBe('authenticated');
   });
 
   it.each(['/revisiones', `/recomendaciones/${PENDING_ID}`])(
