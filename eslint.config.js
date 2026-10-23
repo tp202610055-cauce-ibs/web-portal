@@ -102,7 +102,7 @@ export default defineConfig([
   reactHooks.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
   {
-    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}', 'e2e/**/*.ts', 'playwright.config.ts'],
     rules: {
       'no-console': 'error',
     },

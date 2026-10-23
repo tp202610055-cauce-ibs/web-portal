@@ -1,0 +1,30 @@
+# Service fragment for the D-1 compose file. Build the image on the VM from the repository root, at the tag:
+# docker build -f deploy/portal-web/Dockerfile -t cauce/portal-web:<tag> .
+services:
+  portal-web:
+    image: cauce/portal-web:${PORTAL_WEB_TAG:?set PORTAL_WEB_TAG to the repository tag that was built}
+    environment:
+      PORTAL_FILES_ORIGIN: ${PORTAL_FILES_ORIGIN:?set PORTAL_FILES_ORIGIN to the https origin of the file storage}
+    # Read-only root; nginx (uid 101) writes only its rendered config and temporary files, both in memory.
+    read_only: true
+    tmpfs:
+      - /tmp:uid=101,gid=101,mode=0755
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    restart: unless-stopped
+    # No published port: only the outer Caddy reaches it on the internal network.
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    # "cauce" is the network key of the D-1 compose file; its real name there is cauce-vm.
+    networks:
+      - cauce

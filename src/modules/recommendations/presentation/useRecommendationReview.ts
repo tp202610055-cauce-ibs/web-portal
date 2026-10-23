@@ -26,6 +26,9 @@ function detailKey(recommendationId: string) {
   return [...RECOMMENDATIONS_QUERY_KEY, 'detail', recommendationId] as const;
 }
 
+// Prefix of every page of the queue, as useReviewQueue builds it.
+const PENDING_REVIEW_KEY = [...RECOMMENDATIONS_QUERY_KEY, 'pending-review'] as const;
+
 // The Idempotency-Key follows what is sent: the same content reuses it, a different one gets a new key.
 function contentOf(input: DecisionInput): string {
   return input.decision === 'modify'
@@ -34,12 +37,14 @@ function contentOf(input: DecisionInput): string {
 }
 
 // Opening the detail may expire it on the server; the screen shows whatever state arrives.
+// Not kept once the screen closes: coming back never shows decision buttons from an old state.
 export function useRecommendation(recommendationId: string) {
   const gateway = useRecommendationsGateway();
   return useQuery({
     queryKey: detailKey(recommendationId),
     queryFn: () => getRecommendation(gateway, recommendationId),
     retry: false,
+    gcTime: 0,
   });
 }
 
@@ -61,7 +66,9 @@ export function useReviewDecision(recommendationId: string) {
             idempotencyKey: current.key,
           });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: RECOMMENDATIONS_QUERY_KEY }),
+    // Any decision takes the item out of the queue: its cached pages are dropped so the queue never
+    // shows it again. Only inactive pages go; the detail, still mounted, is left as it is.
+    onSuccess: () => queryClient.removeQueries({ queryKey: PENDING_REVIEW_KEY, type: 'inactive' }),
     onError: (error) => {
       if (!(error instanceof DecisionRefusedError)) {
         return;

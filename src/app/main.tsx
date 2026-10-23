@@ -1,3 +1,6 @@
+// First on purpose: schemas are built when their modules load, and the CSP-safe mode must come before.
+import '@/shared/infrastructure/schemaConfig';
+
 import '@fontsource-variable/inter';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';

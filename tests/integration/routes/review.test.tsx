@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createAppDependencies, type AppComposition } from '@/app/composition';
@@ -320,6 +320,56 @@ describe('review screens from the root', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(detail);
     expect(app?.sessionService.current().status).toBe('authenticated');
+  });
+
+  // Back after a decision: the old detail is not kept, so no decision button is shown from it.
+  it('back_afterApproving_neverShowsDecisionButtonsFromTheOldState', async () => {
+    const user = userEvent.setup();
+    reviewBackend();
+    let detailRequests = 0;
+    server.use(
+      http.get(`*/api/v1/recommendations/${PENDING_ID}`, async () => {
+        detailRequests += 1;
+        if (detailRequests > 1) {
+          await delay('infinite');
+        }
+        return HttpResponse.json(detailBody());
+      }),
+    );
+    const { router } = startApp('/revisiones');
+
+    await user.click(await screen.findByRole('link', { name: 'Paciente Prueba A' }));
+    await user.click(await screen.findByRole('button', { name: es.decision.approve }));
+    await user.type(noteField(), NOTE_CP045);
+    await user.click(screen.getByRole('button', { name: es.decision.confirmApprove }));
+    expect(await screen.findByText(es.reviews.approved)).toHaveAttribute('role', 'status');
+
+    await router.navigate(-1);
+
+    expect(await screen.findByText(es.generic.loading)).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(`/recomendaciones/${PENDING_ID}`);
+    expect(screen.queryByRole('button', { name: es.decision.approve })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: es.decision.modify })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: es.decision.reject })).not.toBeInTheDocument();
+  });
+
+  it('queueRow_opensTheDetailWithASingleRequest', async () => {
+    const user = userEvent.setup();
+    reviewBackend();
+    let detailRequests = 0;
+    server.use(
+      http.get(`*/api/v1/recommendations/${PENDING_ID}`, () => {
+        detailRequests += 1;
+        return HttpResponse.json(detailBody());
+      }),
+    );
+    startApp('/revisiones');
+
+    await user.click(await screen.findByRole('link', { name: 'Paciente Prueba A' }));
+    await screen.findByRole('button', { name: es.decision.approve });
+    await screen.findByText('Paciente Prueba A ·');
+
+    expect(detailRequests).toBe(1);
   });
 
   it.each(['/revisiones', `/recomendaciones/${PENDING_ID}`])(

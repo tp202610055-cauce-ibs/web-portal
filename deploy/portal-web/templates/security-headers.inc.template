@@ -1,0 +1,6 @@
+# Included in every location, because nginx drops inherited add_header as soon as a location sets one.
+# The CSP allows only same-origin resources; the file storage origin is allowed for fetches alone.
+add_header Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self' ${PORTAL_FILES_ORIGIN}; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'" always;
+add_header Referrer-Policy "no-referrer" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" always;

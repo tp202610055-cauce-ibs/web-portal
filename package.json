@@ -11,15 +11,17 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc -b",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"scripts/**/*.mjs\" \"docs/**/*.md\" \"*.{json,js,ts}\" README.md",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"scripts/**/*.mjs\" \"docs/**/*.md\" \"*.{json,js,ts}\" README.md",
+    "typecheck": "tsc -b tsconfig.json tsconfig.e2e.json",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"e2e/**/*.ts\" \"scripts/**/*.mjs\" \"docs/**/*.md\" \"*.{json,js,ts}\" README.md",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"e2e/**/*.ts\" \"scripts/**/*.mjs\" \"docs/**/*.md\" \"*.{json,js,ts}\" README.md",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "api:generate": "node scripts/api.mjs generate",
     "api:check": "node scripts/api.mjs check",
-    "verify": "npm run lint && npm run typecheck && npm run test:coverage && npm run api:check && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test:coverage && npm run api:check && npm run build",
+    "smoke:image": "playwright test --project=image",
+    "smoke": "playwright test --project=smoke"
   },
   "dependencies": {
     "@fontsource-variable/inter": "5.3.0",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
+    "@playwright/test": "1.64.0",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.3",
