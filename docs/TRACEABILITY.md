@@ -61,8 +61,11 @@ de Trigo contra el backend local con la cuenta demo (2026-10-20).
 
 ## Pendiente de verificar en la VM
 
-- Banderas de la cookie `cauce_portal_rt` (HttpOnly, SameSite Strict, Path `/api/v1/auth/portal`).
-- CP017 y las variantes B a D de CP006.
+El orden del recorrido está en `docs/SMOKE.md`.
+
+- Banderas de la cookie `cauce_portal_rt` (HttpOnly, Secure, SameSite Strict, Path `/api/v1/auth/portal`)
+  y CP017: `e2e/smoke/session.spec.ts` y `e2e/smoke/cp017.spec.ts`, con `npm run smoke`.
+- Las variantes B a D de CP006.
 - «Seguir conectado» y el cierre por inactividad con dos pestañas abiertas.
 - Orden del panel (CP049) con varios pacientes y «Vinculado el…» (CP087) con el backend real.
 - Revisión (CP036, CP045, CP046 y CP048) con recomendaciones sembradas en cada estado: pendiente
