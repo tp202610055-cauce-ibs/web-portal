@@ -1,15 +1,23 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-import { FoodCatalogProvider, type FoodCatalogGateway } from '@/modules/clinical-registry';
+import {
+  ClinicalRegistryProvider,
+  FoodCatalogProvider,
+  type ClinicalRegistryGateway,
+  type FoodCatalogGateway,
+} from '@/modules/clinical-registry';
 import {
   InvitationsProvider,
+  PasswordResetProvider,
   SessionProvider,
   type InvitationGateway,
+  type PasswordResetGateway,
   type SessionController,
 } from '@/modules/identity';
 import { PatientsProvider, type PatientsGateway } from '@/modules/patients';
 import { RecommendationsProvider, type RecommendationsGateway } from '@/modules/recommendations';
+import { ReportsProvider, type ReportsGateway } from '@/modules/reports';
 
 export interface AppDependencies {
   readonly session: SessionController;
@@ -18,6 +26,9 @@ export interface AppDependencies {
   readonly invitations: InvitationGateway;
   readonly recommendations: RecommendationsGateway;
   readonly foods: FoodCatalogGateway;
+  readonly clinicalRegistry: ClinicalRegistryGateway;
+  readonly reports: ReportsGateway;
+  readonly passwordReset: PasswordResetGateway;
 }
 
 interface AppProvidersProps {
@@ -32,7 +43,15 @@ export function AppProviders({ dependencies, children }: AppProvidersProps) {
         <PatientsProvider gateway={dependencies.patients}>
           <InvitationsProvider gateway={dependencies.invitations}>
             <RecommendationsProvider gateway={dependencies.recommendations}>
-              <FoodCatalogProvider gateway={dependencies.foods}>{children}</FoodCatalogProvider>
+              <FoodCatalogProvider gateway={dependencies.foods}>
+                <ClinicalRegistryProvider gateway={dependencies.clinicalRegistry}>
+                  <ReportsProvider gateway={dependencies.reports}>
+                    <PasswordResetProvider gateway={dependencies.passwordReset}>
+                      {children}
+                    </PasswordResetProvider>
+                  </ReportsProvider>
+                </ClinicalRegistryProvider>
+              </FoodCatalogProvider>
             </RecommendationsProvider>
           </InvitationsProvider>
         </PatientsProvider>

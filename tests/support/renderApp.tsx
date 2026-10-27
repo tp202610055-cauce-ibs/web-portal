@@ -10,6 +10,7 @@ import type { InvitationGateway, SessionController } from '@/modules/identity';
 import type { PatientsGateway } from '@/modules/patients';
 import type { RecommendationsGateway } from '@/modules/recommendations';
 
+import { fakeClinicalRegistryGateway } from './clinicalRegistry';
 import { fakeFoodCatalogGateway } from './foods';
 import { fakePatientsGateway } from './patients';
 import { fakeRecommendationsGateway } from './recommendations';
@@ -21,6 +22,7 @@ export function testDependencies(
   invitations: InvitationGateway = { generate: () => new Promise(() => undefined) },
   recommendations: RecommendationsGateway = fakeRecommendationsGateway(),
   foods: FoodCatalogGateway = fakeFoodCatalogGateway(),
+  extra: Partial<AppDependencies> = {},
 ): AppDependencies {
   return {
     session,
@@ -29,6 +31,14 @@ export function testDependencies(
     invitations,
     recommendations,
     foods,
+    clinicalRegistry: fakeClinicalRegistryGateway(),
+    reports: { generate: () => new Promise(() => undefined) },
+    passwordReset: {
+      request: () => new Promise(() => undefined),
+      validate: () => new Promise(() => undefined),
+      confirm: () => new Promise(() => undefined),
+    },
+    ...extra,
   };
 }
 

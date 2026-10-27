@@ -1,16 +1,18 @@
 import { QueryClient } from '@tanstack/react-query';
 
 import type { AppDependencies } from '@/app/AppProviders';
-import { HttpFoodCatalogGateway } from '@/modules/clinical-registry';
+import { HttpClinicalRegistryGateway, HttpFoodCatalogGateway } from '@/modules/clinical-registry';
 import {
   BroadcastCrossTabChannel,
   HttpInvitationGateway,
+  HttpPasswordResetGateway,
   HttpPortalAuthGateway,
   SessionService,
   WebLocksRefreshLock,
 } from '@/modules/identity';
 import { HttpPatientsGateway } from '@/modules/patients';
 import { HttpRecommendationsGateway } from '@/modules/recommendations';
+import { HttpReportsGateway } from '@/modules/reports';
 import { createApiClient, type ApiClient } from '@/shared/infrastructure/apiClient';
 import { SystemClock } from '@/shared/infrastructure/SystemClock';
 
@@ -40,5 +42,8 @@ export function createAppDependencies(): AppComposition {
     invitations: new HttpInvitationGateway(api),
     recommendations: new HttpRecommendationsGateway(api),
     foods: new HttpFoodCatalogGateway(api),
+    clinicalRegistry: new HttpClinicalRegistryGateway(api),
+    reports: new HttpReportsGateway(api),
+    passwordReset: new HttpPasswordResetGateway(api),
   };
 }
