@@ -1,4 +1,4 @@
-// Generated from openapi/openapi-v1.8.0.json (sha256 df871dd2ca0ed2c803900b218a91c421153c4b8535d91bb3b79be0438a3cbec1) by npm run api:generate.
+// Generated from openapi/openapi-v1.9.0.json (sha256 c8dca51a6b5a04861afbf140305a301b1b152200495b6c0f5e489ab5416632a9) by npm run api:generate.
 // Do not edit by hand.
 export interface paths {
     "/api/v1/admin/nutritionists": {
@@ -831,6 +831,83 @@ export interface paths {
             responses: {
                 /** @description OK */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password-reset/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprueba si un enlace de restablecimiento todavía sirve, sin consumirlo. Responde lo mismo
+         *     para un token inexistente, vencido o ya usado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Token recibido por correo. */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ValidatePasswordResetRequest"];
+                    "text/json": components["schemas"]["ValidatePasswordResetRequest"];
+                    "application/*+json": components["schemas"]["ValidatePasswordResetRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3815,6 +3892,270 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/nutritionists/me/patients/{patientId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Devuelve el diario de un paciente asignado (comidas, síntomas y notas clínicas) en un rango de
+         *     fechas, del más reciente al más antiguo. Requiere una asignación activa y queda auditado.
+         * @description Devuelve como máximo 500 comidas y 500 síntomas del rango; las notas clínicas no tienen tope.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Inicio del rango, obligatorio e inclusivo, con zona horaria (`Z` u offset). Filtra comidas y síntomas por `clientCreatedAt` y notas por `createdAt`. */
+                    from: string;
+                    /** @description Fin del rango, obligatorio e inclusivo, con zona horaria y no anterior a `from`. */
+                    to: string;
+                };
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                        "application/json": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                        "text/json": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/patients/{patientId}/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista, paginadas, todas las recomendaciones de un paciente asignado: vigentes, en revisión, con
+         *     decisión final y archivadas. Requiere una asignación activa y queda auditado.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Número de página. */
+                    page?: number;
+                    /** @description Tamaño de página, de 1 a 100. */
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                        "application/json": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                        "text/json": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/patients/{patientId}/ibs-sss-cycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Devuelve el estado del ciclo vigente del cuestionario IBS-SSS de un paciente asignado. Requiere
+         *     una asignación activa y queda auditado.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IbsSssCycleStatusDto"];
+                        "application/json": components["schemas"]["IbsSssCycleStatusDto"];
+                        "text/json": components["schemas"]["IbsSssCycleStatusDto"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/symptoms/{id}/meal-association": {
         parameters: {
             query?: never;
@@ -4130,6 +4471,91 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations/me/review-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indica si el paciente autenticado tiene una recomendación en revisión por su nutricionista, sin
+         *     mostrar su contenido.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["RecommendationReviewStatusDto"];
+                        "application/json": components["schemas"]["RecommendationReviewStatusDto"];
+                        "text/json": components["schemas"]["RecommendationReviewStatusDto"];
                     };
                 };
                 /** @description Unauthorized */
@@ -7043,6 +7469,17 @@ export interface components {
             /** Format: date */
             nextAssessmentDate: string | null;
         };
+        /** @enum {string} */
+        IbsSssCycleStatus: "None" | "Pending" | "Missed" | "Completed";
+        IbsSssCycleStatusDto: {
+            status: components["schemas"]["IbsSssCycleStatus"];
+            /** Format: date-time */
+            dueDate: string | null;
+            /** Format: date-time */
+            reminderSentAt: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
         IbsSssEvolutionEntry: {
             assessment: components["schemas"]["IbsSssAssessmentSummary"];
             /** Format: int32 */
@@ -7228,6 +7665,36 @@ export interface components {
             /** Format: int32 */
             registrationFrequency14d: number;
         };
+        PatientRecommendationForNutritionistDto: {
+            /** Format: uuid */
+            recommendationId: string;
+            status: components["schemas"]["RecommendationStatus"];
+            source: components["schemas"]["RecommendationSource"];
+            title: string | null;
+            /** Format: int32 */
+            itemsCount: number;
+            /** Format: date-time */
+            generatedAt: string;
+            /** Format: date-time */
+            reviewedAt: string | null;
+            /** Format: date-time */
+            expiresAt: string | null;
+            /** Format: date-time */
+            validUntil: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            archivedAt: string | null;
+            archiveReason: components["schemas"]["ArchiveReason"];
+        };
+        PatientRecommendationForNutritionistDtoPagedResult: {
+            items: components["schemas"]["PatientRecommendationForNutritionistDto"][] | null;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            totalCount: number;
+        };
         PendingReviewRecommendationDto: {
             /** Format: uuid */
             recommendationId: string;
@@ -7354,6 +7821,9 @@ export interface components {
             substituteFoodId: string | null;
             substituteFoodName: string | null;
             reasoning: string | null;
+        };
+        RecommendationReviewStatusDto: {
+            hasRecommendationInReview: boolean;
         };
         /** @enum {string} */
         RecommendationSource: "EngineGenerated" | "Manual";
@@ -7610,6 +8080,11 @@ export interface components {
         };
         /** @enum {string} */
         UserStatus: "PendingActivation" | "Active" | "Inactive" | "Suspended";
+        /** @description Cuerpo de la petición que comprueba si un enlace de restablecimiento todavía sirve. */
+        ValidatePasswordResetRequest: {
+            /** @description Token de restablecimiento recibido por correo. */
+            token: string | null;
+        };
     };
     responses: never;
     parameters: never;
