@@ -8,6 +8,7 @@ export type {
   PortalSessionGrant,
 } from '@/modules/identity/application/PortalAuthGateway';
 export type { InvitationGateway } from '@/modules/identity/application/InvitationGateway';
+export type { PasswordResetGateway } from '@/modules/identity/application/PasswordResetGateway';
 export type { RefreshLock } from '@/modules/identity/application/RefreshLock';
 export type { SessionController } from '@/modules/identity/application/SessionController';
 export type { SessionReader } from '@/modules/identity/application/SessionReader';
@@ -18,12 +19,16 @@ export { NUTRITIONIST_ROLE } from '@/modules/identity/domain/Session';
 export type { Session, SessionUser, SignedOutReason } from '@/modules/identity/domain/Session';
 export { BroadcastCrossTabChannel } from '@/modules/identity/infrastructure/BroadcastCrossTabChannel';
 export { HttpInvitationGateway } from '@/modules/identity/infrastructure/HttpInvitationGateway';
+export { HttpPasswordResetGateway } from '@/modules/identity/infrastructure/HttpPasswordResetGateway';
 export { HttpPortalAuthGateway } from '@/modules/identity/infrastructure/HttpPortalAuthGateway';
 export { WebLocksRefreshLock } from '@/modules/identity/infrastructure/WebLocksRefreshLock';
+export { ForgotPasswordPage } from '@/modules/identity/presentation/ForgotPasswordPage';
 export { InvitationCodeGenerator } from '@/modules/identity/presentation/InvitationCodeGenerator';
 export { InvitationsProvider } from '@/modules/identity/presentation/InvitationsContext';
 export { LoginPage } from '@/modules/identity/presentation/LoginPage';
 export { LogoutButton } from '@/modules/identity/presentation/LogoutButton';
+export { PasswordResetProvider } from '@/modules/identity/presentation/PasswordResetContext';
+export { ResetPasswordPage } from '@/modules/identity/presentation/ResetPasswordPage';
 export { RequireNutritionist } from '@/modules/identity/presentation/RequireNutritionist';
 export {
   SessionProvider,
