@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type {
+  PatientRecommendationsPage,
   PendingReviewPage,
   RecommendationAction,
   RecommendationDetail,
@@ -32,6 +33,11 @@ const allowedActions = z
   .array(z.string())
   .nullable()
   .transform((values) => (values ?? []).filter(isKnownAction));
+
+// Declared as a plain enum, but null while the recommendation is active.
+const archiveReason = z
+  .enum(['TemporalExpiration', 'ManualSubstitution', 'ObjectiveMet', 'PlanChange'])
+  .nullable();
 
 // The server sends an empty name when no model produced the recommendation.
 const modelVersionName = z
@@ -98,7 +104,39 @@ const detail = z.object({
   description: z.string().nullable(),
   source: z.enum(['EngineGenerated', 'Manual']),
   allowedActions,
+  isActive: z.boolean(),
+  archivedAt: instant.nullable(),
+  archiveReason,
 });
+
+const patientPage = z.object({
+  items: z
+    .array(
+      z.object({
+        recommendationId: z.string().min(1),
+        status: z.enum(STATUSES),
+        source: z.enum(['EngineGenerated', 'Manual']),
+        title: z.string().nullable(),
+        itemsCount: z.number().int().nonnegative(),
+        generatedAt: instant,
+        validUntil: instant.nullable(),
+        isActive: z.boolean(),
+        archivedAt: instant.nullable(),
+        archiveReason,
+      }),
+    )
+    .nullable(),
+  totalCount: z.number().int().nonnegative(),
+});
+
+// Newest first, as the server orders them; active and archived come in the same list.
+export function toPatientRecommendationsPage(payload: unknown): PatientRecommendationsPage {
+  const parsed = patientPage.safeParse(payload);
+  if (!parsed.success) {
+    throw new ContractViolationError('PatientRecommendationForNutritionistDtoPagedResult');
+  }
+  return { items: parsed.data.items ?? [], totalCount: parsed.data.totalCount };
+}
 
 // The queue keeps the server order: oldest generation first.
 export function toPendingReviewPage(payload: unknown): PendingReviewPage {

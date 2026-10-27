@@ -1,18 +1,27 @@
 import type { ModificationRequest } from '@/modules/recommendations/application/modifyRecommendation';
+import { z } from 'zod';
+
 import type { RecommendationsGateway } from '@/modules/recommendations/application/RecommendationsGateway';
+import type { ManualRequest } from '@/modules/recommendations/domain/manualRecommendation';
 import {
   DecisionRefusedError,
+  ManualRefusedError,
   RecommendationAccessDeniedError,
   RecommendationNotFoundError,
+  type ArchiveReason,
   type DecisionFailure,
+  type ManualFailure,
+  type ManualField,
+  type PatientRecommendationsPage,
   type PendingReviewPage,
   type RecommendationDetail,
 } from '@/modules/recommendations/domain/Recommendation';
 import {
+  toPatientRecommendationsPage,
   toPendingReviewPage,
   toRecommendationDetail,
 } from '@/modules/recommendations/infrastructure/recommendationMapper';
-import { ServiceUnavailableError } from '@/shared/domain/errors';
+import { ContractViolationError, ServiceUnavailableError } from '@/shared/domain/errors';
 import type { ApiClient } from '@/shared/infrastructure/apiClient';
 import { toApiProblem, type ApiProblem } from '@/shared/infrastructure/problemReader';
 
@@ -31,11 +40,45 @@ async function send<T extends ApiResult>(request: () => Promise<T>): Promise<T> 
   }
 }
 
+const created = z.object({ recommendationId: z.string().min(1) });
+
 const CONFLICTS: Record<string, DecisionFailure> = {
   conflict_state: { kind: 'state-conflict' },
   recommendation_expired: { kind: 'expired' },
   idempotency_mismatch: { kind: 'idempotency-mismatch' },
+  recommendation_not_archivable: { kind: 'not-archivable' },
 };
+
+const MANUAL_FIELDS: Record<string, ManualField> = {
+  title: 'title',
+  description: 'description',
+  clinicalnote: 'note',
+};
+
+// Field errors go next to their field, whatever the casing of the key; the rest goes to the form.
+function manualFailure(status: number, body: unknown): ManualFailure | null {
+  if (status === 403) {
+    return { kind: 'access-denied' };
+  }
+  if (status !== 400) {
+    return null;
+  }
+  const fields: Partial<Record<ManualField, string[]>> = {};
+  const other: string[] = [];
+  for (const [key, messages] of Object.entries(toApiProblem(status, body).errors ?? {})) {
+    const field = MANUAL_FIELDS[key.toLowerCase()];
+    if (field === undefined) {
+      other.push(...messages);
+    } else {
+      fields[field] = [...(fields[field] ?? []), ...messages];
+    }
+  }
+  const detail = problemDetail(body);
+  if (Object.keys(fields).length === 0 && other.length === 0 && detail !== null) {
+    other.push(detail);
+  }
+  return { kind: 'invalid', fields, other };
+}
 
 type InvalidReader = (problem: ApiProblem, body: unknown) => DecisionFailure;
 
@@ -166,5 +209,49 @@ export class HttpRecommendationsGateway implements RecommendationsGateway {
       ),
       invalidModification,
     );
+  }
+
+  // A 403 means the patient is not assigned to this nutritionist; like any failure, it cannot load.
+  async listForPatient(
+    patientId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<PatientRecommendationsPage> {
+    const { data, response } = await send(() =>
+      this.api.GET('/api/v1/nutritionists/me/patients/{patientId}/recommendations', {
+        params: { path: { patientId }, query: { page, pageSize } },
+      }),
+    );
+    if (!response.ok) {
+      throw new ServiceUnavailableError();
+    }
+    return toPatientRecommendationsPage(data);
+  }
+
+  async archive(recommendationId: string, reason: ArchiveReason): Promise<void> {
+    decided(
+      await send(() =>
+        this.api.POST('/api/v1/recommendations/{id}/archive', {
+          params: { path: { id: recommendationId } },
+          body: { reason },
+        }),
+      ),
+    );
+  }
+
+  // The portal sets no end date (validUntil): the contract allows null and the CP do not ask for one.
+  async createManual(request: ManualRequest): Promise<string> {
+    const { data, error, response } = await send(() =>
+      this.api.POST('/api/v1/recommendations/manual', { body: { ...request, validUntil: null } }),
+    );
+    if (response.ok) {
+      const parsed = created.safeParse(data);
+      if (!parsed.success) {
+        throw new ContractViolationError('CreateManualRecommendationResult');
+      }
+      return parsed.data.recommendationId;
+    }
+    const failure = manualFailure(response.status, error);
+    throw failure === null ? new ServiceUnavailableError() : new ManualRefusedError(failure);
   }
 }

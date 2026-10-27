@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
+import { PatientDiary } from '@/modules/clinical-registry';
+
 import {
   buildModification,
   hasChanges,
@@ -10,6 +12,7 @@ import {
   DecisionRefusedError,
   RecommendationAccessDeniedError,
   RecommendationNotFoundError,
+  type RecommendationDetail,
   type RecommendationStatus,
 } from '@/modules/recommendations/domain/Recommendation';
 import {
@@ -18,6 +21,7 @@ import {
   hasProblems,
   type RecommendationDraft,
 } from '@/modules/recommendations/domain/recommendationDraft';
+import { ArchivePanel } from '@/modules/recommendations/presentation/ArchivePanel';
 import { RecommendationContent } from '@/modules/recommendations/presentation/RecommendationContent';
 import { RecommendationEditor } from '@/modules/recommendations/presentation/RecommendationEditor';
 import {
@@ -34,6 +38,7 @@ import {
   useReviewDecision,
   type DecisionInput,
 } from '@/modules/recommendations/presentation/useRecommendationReview';
+import { formatLimaDate } from '@/shared/presentation/format/limaTime';
 import { es } from '@/shared/presentation/i18n/es';
 
 // The text follows the status the server sent; the buttons follow only allowedActions.
@@ -173,11 +178,22 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
               onChange={changeDraft}
             />
           ) : (
-            <RecommendationContent detail={detail.data} />
+            <div className="stack">
+              <RecommendationContent detail={detail.data} />
+              <PatientDiary
+                patientId={detail.data.patientId}
+                assignedAt={null}
+                window={{
+                  from: detail.data.supportingData.windowFrom,
+                  to: detail.data.supportingData.windowTo,
+                }}
+                title={es.recommendation.historyTitle}
+              />
+            </div>
           )}
           <aside aria-labelledby="decision-title" className="card stack">
             <h2 id="decision-title">{es.decision.title}</h2>
-            <StateNotice status={detail.data.status} alert={alert} />
+            <StateNotice detail={detail.data} alert={alert} />
             <ReviewDecisionPanel
               actions={detail.data.allowedActions}
               submitting={decision.isPending}
@@ -187,6 +203,12 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
               onDismissError={dismissError}
               onDecisionChange={changeDecision}
             />
+            {detail.data.allowedActions.includes('Archive') && (
+              <ArchivePanel
+                recommendationId={detail.data.recommendationId}
+                patientId={detail.data.patientId}
+              />
+            )}
           </aside>
         </div>
       )}
@@ -194,15 +216,22 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
   );
 }
 
-// Skipped when the alert already says the same, as after an expiry found while confirming.
+// Skipped when the alert already says the same, as after an expiry found while confirming. An
+// archived one says when and why instead of its status text.
 function StateNotice({
-  status,
+  detail,
   alert,
 }: {
-  readonly status: RecommendationStatus;
+  readonly detail: RecommendationDetail;
   readonly alert: string | null;
 }) {
-  const notice = STATE_NOTICE[status];
+  const notice =
+    !detail.isActive && detail.archivedAt !== null && detail.archiveReason !== null
+      ? es.archive.archivedState(
+          formatLimaDate(detail.archivedAt),
+          es.archiveReason[detail.archiveReason],
+        )
+      : STATE_NOTICE[detail.status];
   if (notice === null || notice === alert) {
     return null;
   }

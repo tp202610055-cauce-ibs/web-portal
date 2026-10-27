@@ -13,6 +13,15 @@ export type RecommendationAction = 'Approve' | 'Modify' | 'Reject' | 'Archive';
 export type FoodAction = 'Suggest' | 'Reduce' | 'Avoid' | 'Substitute';
 export type ExplanationSource = 'LlmGenerated' | 'Fallback' | 'Manual';
 export type RecommendationSource = 'EngineGenerated' | 'Manual';
+export type ArchiveReason =
+  'TemporalExpiration' | 'ManualSubstitution' | 'ObjectiveMet' | 'PlanChange';
+
+// The reasons a nutritionist may choose; TemporalExpiration belongs to the daily sweep.
+export const MANUAL_ARCHIVE_REASONS: readonly ArchiveReason[] = [
+  'ManualSubstitution',
+  'ObjectiveMet',
+  'PlanChange',
+];
 
 // One row of the review queue, in the order the server sends it (oldest first).
 export interface PendingReview {
@@ -75,6 +84,29 @@ export interface RecommendationDetail {
   readonly reviewedAt: Date | null;
   readonly expiresAt: Date | null;
   readonly allowedActions: RecommendationAction[];
+  // Archiving is a flag, not a status: the status stays as it was.
+  readonly isActive: boolean;
+  readonly archivedAt: Date | null;
+  readonly archiveReason: ArchiveReason | null;
+}
+
+// One row of a patient's recommendations, in the server order (newest first).
+export interface PatientRecommendation {
+  readonly recommendationId: string;
+  readonly status: RecommendationStatus;
+  readonly source: RecommendationSource;
+  readonly title: string | null;
+  readonly itemsCount: number;
+  readonly generatedAt: Date;
+  readonly validUntil: Date | null;
+  readonly isActive: boolean;
+  readonly archivedAt: Date | null;
+  readonly archiveReason: ArchiveReason | null;
+}
+
+export interface PatientRecommendationsPage {
+  readonly items: PatientRecommendation[];
+  readonly totalCount: number;
 }
 
 export class RecommendationAccessDeniedError extends Error {
@@ -97,6 +129,7 @@ export type DecisionFailure =
   | { readonly kind: 'idempotency-mismatch' }
   | { readonly kind: 'access-denied' }
   | { readonly kind: 'not-found' }
+  | { readonly kind: 'not-archivable' }
   | { readonly kind: 'invalid-note'; readonly messages: string[] }
   | { readonly kind: 'invalid-content'; readonly messages: string[] };
 
@@ -107,6 +140,27 @@ export class DecisionRefusedError extends Error {
   constructor(failure: DecisionFailure) {
     super(`The decision was refused: ${failure.kind}.`);
     this.name = 'DecisionRefusedError';
+    this.failure = failure;
+  }
+}
+
+export type ManualField = 'title' | 'description' | 'note';
+
+export type ManualFailure =
+  | { readonly kind: 'access-denied' }
+  | {
+      readonly kind: 'invalid';
+      readonly fields: Partial<Record<ManualField, string[]>>;
+      readonly other: string[];
+    };
+
+// The server refused a manual recommendation; the messages are the texts the server wrote.
+export class ManualRefusedError extends Error {
+  readonly failure: ManualFailure;
+
+  constructor(failure: ManualFailure) {
+    super(`The manual recommendation was refused: ${failure.kind}.`);
+    this.name = 'ManualRefusedError';
     this.failure = failure;
   }
 }

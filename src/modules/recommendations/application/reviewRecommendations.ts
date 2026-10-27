@@ -15,11 +15,15 @@ export interface DecisionRequest {
   readonly idempotencyKey: string;
 }
 
-// The route carries a UUID; anything else is not a recommendation and never reaches the server.
+// The route carries a UUID; anything else is not a recommendation or a patient and never reaches the server.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function isRecommendationId(value: string | undefined): value is string {
+export function isUuid(value: string | undefined): value is string {
   return value !== undefined && UUID.test(value);
+}
+
+export function isRecommendationId(value: string | undefined): value is string {
+  return isUuid(value);
 }
 
 // Pages start at 1, as the server counts them.

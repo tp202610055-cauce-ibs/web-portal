@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -60,6 +60,7 @@ function reviewBackend() {
   server.use(
     http.post('*/api/v1/auth/portal/refresh', () => HttpResponse.json(portalSessionBody())),
     http.get('*/api/v1/nutritionists/me/patients', () => HttpResponse.json([])),
+    http.get('*/api/v1/nutritionists/me/patients/:patientId/history', () => HttpResponse.json([])),
     http.get(`*/api/v1/nutritionists/me/patients/${REVIEW_PATIENT_ID}`, () =>
       HttpResponse.json(patientDetailBody()),
     ),
@@ -346,8 +347,11 @@ describe('review screens from the root', () => {
 
     await router.navigate(-1);
 
+    // The queue may still be loading; only the review screen's own loading state counts.
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`/recomendaciones/${PENDING_ID}`),
+    );
     expect(await screen.findByText(es.generic.loading)).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe(`/recomendaciones/${PENDING_ID}`);
     expect(screen.queryByRole('button', { name: es.decision.approve })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: es.decision.modify })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: es.decision.reject })).not.toBeInTheDocument();
