@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ClinicalRegistryProvider } from '@/modules/clinical-registry';
 import { PatientsProvider, type PatientsGateway } from '@/modules/patients';
 import { PatientAccessDeniedError } from '@/modules/patients/domain/PatientRecord';
 import { toPatientDetail } from '@/modules/patients/infrastructure/patientRecordMapper';
@@ -20,6 +21,7 @@ import { RecommendationsProvider } from '@/modules/recommendations/presentation/
 import { ServiceUnavailableError } from '@/shared/domain/errors';
 import { es } from '@/shared/presentation/i18n/es';
 
+import { fakeClinicalRegistryGateway } from '../../../../support/clinicalRegistry';
 import { detailBody as patientDetailBody } from '../../../../support/patientRecord';
 import { fakePatientsGateway } from '../../../../support/patients';
 import {
@@ -59,7 +61,9 @@ function renderReview(
     <QueryClientProvider client={new QueryClient()}>
       <PatientsProvider gateway={fakePatientsGateway(patients)}>
         <RecommendationsProvider gateway={fakeRecommendationsGateway(overrides)}>
-          <RouterProvider router={router} />
+          <ClinicalRegistryProvider gateway={fakeClinicalRegistryGateway()}>
+            <RouterProvider router={router} />
+          </ClinicalRegistryProvider>
         </RecommendationsProvider>
       </PatientsProvider>
     </QueryClientProvider>,
@@ -473,7 +477,13 @@ describe('RecommendationReviewPage', () => {
 
     expect(field(es.recommendation.status)).toHaveTextContent(status);
     expect(within(panel).getByRole('status')).toHaveTextContent(notice);
-    expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    // Nothing edits it; when the server allows archiving, that is the only action offered.
+    const buttons = within(panel)
+      .queryAllByRole('button')
+      .map((button) => button.textContent);
+    expect(buttons).toEqual(
+      (body.allowedActions ?? []).includes('Archive') ? [es.archive.open] : [],
+    );
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 

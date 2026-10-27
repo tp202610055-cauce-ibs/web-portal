@@ -10,7 +10,12 @@ import { FoodSearch } from '@/modules/clinical-registry/presentation/FoodSearch'
 import { ServiceUnavailableError } from '@/shared/domain/errors';
 import { es } from '@/shared/presentation/i18n/es';
 
-import { DAIRY_ID, dairyResults, foodBody } from '../../../../support/foods';
+import {
+  DAIRY_ID,
+  dairyResults,
+  fakeFoodCatalogGateway,
+  foodBody,
+} from '../../../../support/foods';
 
 const LABEL = 'Agregar alimento';
 const dairy = toFoodSummaries(dairyResults);
@@ -30,7 +35,7 @@ function renderSearch(
   const onSelect = props.onSelect ?? vi.fn();
   const view = render(
     <QueryClientProvider client={new QueryClient()}>
-      <FoodCatalogProvider gateway={{ search }}>
+      <FoodCatalogProvider gateway={fakeFoodCatalogGateway({ search })}>
         <FoodSearch label={LABEL} excludedFoodIds={props.excludedFoodIds} onSelect={onSelect} />
       </FoodCatalogProvider>
     </QueryClientProvider>,

@@ -6,7 +6,7 @@ import {
   PatientNotFoundError,
 } from '@/modules/patients/domain/PatientRecord';
 import { HttpPatientsGateway } from '@/modules/patients/infrastructure/HttpPatientsGateway';
-import { ServiceUnavailableError } from '@/shared/domain/errors';
+import { ContractViolationError, ServiceUnavailableError } from '@/shared/domain/errors';
 import { createApiClient } from '@/shared/infrastructure/apiClient';
 
 import { server } from '../../../../msw/server';
@@ -14,6 +14,7 @@ import { detailBody, evolutionCp056A, RECORD_PATIENT_ID } from '../../../../supp
 
 const DETAIL = `*/api/v1/nutritionists/me/patients/${RECORD_PATIENT_ID}`;
 const EVOLUTION = `${DETAIL}/evolution`;
+const CYCLE = `${DETAIL}/ibs-sss-cycle`;
 
 describe('HttpPatientsGateway patient record', () => {
   let gateway: HttpPatientsGateway;
@@ -65,5 +66,40 @@ describe('HttpPatientsGateway patient record', () => {
     server.use(http.get(EVOLUTION, resolver));
 
     await expect(gateway.getEvolution(RECORD_PATIENT_ID)).rejects.toBeInstanceOf(expected);
+  });
+
+  it('getIbsSssCycle_mapsStatusAndDates', async () => {
+    server.use(
+      http.get(CYCLE, () =>
+        HttpResponse.json({
+          status: 'Missed',
+          dueDate: '2026-10-17T15:00:00Z',
+          reminderSentAt: '2026-10-19T15:00:00Z',
+          completedAt: null,
+        }),
+      ),
+    );
+
+    expect(await gateway.getIbsSssCycle(RECORD_PATIENT_ID)).toEqual({
+      status: 'Missed',
+      dueDate: new Date('2026-10-17T15:00:00Z'),
+      completedAt: null,
+    });
+  });
+
+  it('getIbsSssCycle_with403_isAccessDenied', async () => {
+    server.use(http.get(CYCLE, () => new HttpResponse(null, { status: 403 })));
+
+    await expect(gateway.getIbsSssCycle(RECORD_PATIENT_ID)).rejects.toBeInstanceOf(
+      PatientAccessDeniedError,
+    );
+  });
+
+  it('getIbsSssCycle_withAnUnknownStatus_isAContractViolation', async () => {
+    server.use(http.get(CYCLE, () => HttpResponse.json({ status: 'Late', dueDate: null })));
+
+    await expect(gateway.getIbsSssCycle(RECORD_PATIENT_ID)).rejects.toBeInstanceOf(
+      ContractViolationError,
+    );
   });
 });

@@ -9,6 +9,7 @@ import {
   PatientNotFoundError,
 } from '@/modules/patients/domain/PatientRecord';
 import {
+  toIbsSssCycle,
   toPatientDetail,
   toPatientEvolution,
 } from '@/modules/patients/infrastructure/patientRecordMapper';
@@ -174,6 +175,55 @@ describe('PatientSummary', () => {
     await screen.findByText(es.record.loadError);
     await userEvent.setup().click(screen.getByRole('button', { name: es.record.retry }));
 
+    expect(await screen.findByText(es.record.fields.age)).toBeInTheDocument();
+  });
+
+  // CP031: pending after the reminder, not completed after seven more days.
+  it.each([
+    ['Pending', es.ibsSssCycle.status.Pending, es.ibsSssCycle.dueDate('24/10/2026')],
+    ['Missed', es.ibsSssCycle.status.Missed, es.ibsSssCycle.dueDate('24/10/2026')],
+    ['None', es.ibsSssCycle.status.None, null],
+  ] as const)('ibsSssCycle_%s_showsItsStatus', async (status, label, due) => {
+    renderSummary({
+      ...withData,
+      getIbsSssCycle: async () =>
+        toIbsSssCycle({
+          status,
+          dueDate: status === 'None' ? null : '2026-10-24T15:00:00Z',
+          reminderSentAt: null,
+          completedAt: null,
+        }),
+    });
+
+    const card = await screen.findByRole('region', { name: es.ibsSssCycle.title });
+    expect(await within(card).findByText(label)).toBeInTheDocument();
+    if (due !== null) {
+      expect(within(card).getByText(due)).toBeInTheDocument();
+    }
+  });
+
+  it('ibsSssCycle_completed_showsWhenItWasAnswered', async () => {
+    renderSummary({
+      ...withData,
+      getIbsSssCycle: async () =>
+        toIbsSssCycle({
+          status: 'Completed',
+          dueDate: '2026-10-24T15:00:00Z',
+          reminderSentAt: null,
+          completedAt: '2026-10-23T15:00:00Z',
+        }),
+    });
+
+    expect(await screen.findByText(es.ibsSssCycle.completedAt('23/10/2026'))).toBeInTheDocument();
+  });
+
+  it('ibsSssCycle_failure_offersARetryAndKeepsTheRest', async () => {
+    renderSummary({
+      ...withData,
+      getIbsSssCycle: () => Promise.reject(new ServiceUnavailableError()),
+    });
+
+    expect(await screen.findByText(es.ibsSssCycle.loadError)).toBeInTheDocument();
     expect(await screen.findByText(es.record.fields.age)).toBeInTheDocument();
   });
 });

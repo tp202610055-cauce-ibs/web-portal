@@ -23,12 +23,13 @@ export const dairyResults: FoodItemSummary[] = [
   foodBody({ foodId: MILK_ID, name: 'Leche sin lactosa', fodmapLevel: 'Low' }),
 ];
 
-// Searches never resolve unless a test provides its own.
+// Searches and food reads never resolve unless a test provides its own.
 export function fakeFoodCatalogGateway(
   overrides: Partial<FoodCatalogGateway> = {},
 ): FoodCatalogGateway {
   return {
     search: () => new Promise(() => undefined),
+    getFood: () => new Promise(() => undefined),
     ...overrides,
   };
 }
