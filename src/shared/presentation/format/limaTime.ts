@@ -14,6 +14,18 @@ const dateFormat = new Intl.DateTimeFormat('es-PE', {
   year: 'numeric',
 });
 
+const isoDateFormat = new Intl.DateTimeFormat('en-CA', {
+  timeZone: LIMA,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+// The Lima calendar day of an instant, as YYYY-MM-DD.
+export function todayInLima(now: Date): string {
+  return isoDateFormat.format(now);
+}
+
 export function formatLimaTime(value: Date): string {
   return timeFormat.format(value);
 }
