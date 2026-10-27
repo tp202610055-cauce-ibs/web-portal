@@ -1,6 +1,7 @@
 import type { PatientDetail } from '@/modules/patients/domain/PatientRecord';
 import { LoadFailure } from '@/modules/patients/presentation/LoadFailure';
 import {
+  useIbsSssCycle,
   usePatientDetail,
   usePatientEvolution,
 } from '@/modules/patients/presentation/usePatientRecord';
@@ -15,6 +16,7 @@ export function PatientSummary({ patientId }: { readonly patientId: string }) {
   return (
     <div className="stack">
       <LatestIbsSss patientId={patientId} />
+      <IbsSssCycleCard patientId={patientId} />
       {detail.isPending ? (
         <p role="status">{es.generic.loading}</p>
       ) : detail.isError ? (
@@ -62,6 +64,44 @@ function LatestIbsSss({ patientId }: { readonly patientId: string }) {
   return (
     <section aria-labelledby="latest-ibs-sss" className="card stack">
       <h2 id="latest-ibs-sss">{record.latestIbsSss}</h2>
+      {content}
+    </section>
+  );
+}
+
+// CP031: the questionnaire status exactly as the server reports it, with its due date.
+function IbsSssCycleCard({ patientId }: { readonly patientId: string }) {
+  const cycle = useIbsSssCycle(patientId);
+  const text = es.ibsSssCycle;
+  let content;
+  if (cycle.isPending) {
+    content = <p role="status">{es.generic.loading}</p>;
+  } else if (cycle.isError) {
+    content = (
+      <LoadFailure
+        error={cycle.error}
+        message={text.loadError}
+        onRetry={() => void cycle.refetch()}
+      />
+    );
+  } else {
+    const { status, dueDate, completedAt } = cycle.data;
+    content = (
+      <>
+        <p>
+          <strong>{text.status[status]}</strong>
+        </p>
+        {status === 'Completed' && completedAt !== null ? (
+          <p>{text.completedAt(formatLimaDate(completedAt))}</p>
+        ) : (
+          dueDate !== null && <p>{text.dueDate(formatLimaDate(dueDate))}</p>
+        )}
+      </>
+    );
+  }
+  return (
+    <section aria-labelledby="ibs-sss-cycle" className="card stack">
+      <h2 id="ibs-sss-cycle">{text.title}</h2>
       {content}
     </section>
   );

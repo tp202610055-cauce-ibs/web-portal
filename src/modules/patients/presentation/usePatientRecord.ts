@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
+  getIbsSssCycle,
   getPatientDetail,
   getPatientEvolution,
 } from '@/modules/patients/application/getPatientRecord';
@@ -21,6 +22,15 @@ export function usePatientEvolution(patientId: string) {
   return useQuery({
     queryKey: ['patients', 'evolution', patientId],
     queryFn: () => getPatientEvolution(gateway, patientId),
+    retry: false,
+  });
+}
+
+export function useIbsSssCycle(patientId: string) {
+  const gateway = usePatientsGateway();
+  return useQuery({
+    queryKey: ['patients', 'ibs-sss-cycle', patientId],
+    queryFn: () => getIbsSssCycle(gateway, patientId),
     retry: false,
   });
 }

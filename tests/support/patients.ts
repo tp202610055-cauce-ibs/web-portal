@@ -62,6 +62,7 @@ export function fakePatientsGateway(overrides: Partial<PatientsGateway> = {}): P
     listAssigned: () => Promise.resolve([]),
     getDetail: () => new Promise(() => undefined),
     getEvolution: () => new Promise(() => undefined),
+    getIbsSssCycle: () => new Promise(() => undefined),
     ...overrides,
   };
 }

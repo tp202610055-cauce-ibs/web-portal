@@ -114,6 +114,7 @@ describe('patient record from the root', () => {
       http.post('*/api/v1/auth/portal/refresh', () => HttpResponse.json(portalSessionBody())),
       http.get(`*/api/v1/nutritionists/me/patients/${RECORD_PATIENT_ID}`, failure),
       http.get(`*/api/v1/nutritionists/me/patients/${RECORD_PATIENT_ID}/evolution`, failure),
+      http.get(`*/api/v1/nutritionists/me/patients/${RECORD_PATIENT_ID}/ibs-sss-cycle`, failure),
     );
     app = createAppDependencies();
     void app.sessionService.start();
