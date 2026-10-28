@@ -10,6 +10,7 @@ import {
   SessionService,
   WebLocksRefreshLock,
 } from '@/modules/identity';
+import { HttpAlertsGateway } from '@/modules/notifications';
 import { HttpPatientsGateway } from '@/modules/patients';
 import { HttpRecommendationsGateway } from '@/modules/recommendations';
 import { HttpReportsGateway } from '@/modules/reports';
@@ -45,5 +46,6 @@ export function createAppDependencies(): AppComposition {
     clinicalRegistry: new HttpClinicalRegistryGateway(api),
     reports: new HttpReportsGateway(api),
     passwordReset: new HttpPasswordResetGateway(api),
+    alerts: new HttpAlertsGateway(api),
   };
 }

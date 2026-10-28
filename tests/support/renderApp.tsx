@@ -10,6 +10,7 @@ import type { InvitationGateway, SessionController } from '@/modules/identity';
 import type { PatientsGateway } from '@/modules/patients';
 import type { RecommendationsGateway } from '@/modules/recommendations';
 
+import { fakeAlertsGateway } from './alerts';
 import { fakeClinicalRegistryGateway } from './clinicalRegistry';
 import { fakeFoodCatalogGateway } from './foods';
 import { fakePatientsGateway } from './patients';
@@ -38,6 +39,7 @@ export function testDependencies(
       validate: () => new Promise(() => undefined),
       confirm: () => new Promise(() => undefined),
     },
+    alerts: fakeAlertsGateway(),
     ...extra,
   };
 }

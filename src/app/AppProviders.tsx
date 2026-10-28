@@ -15,6 +15,7 @@ import {
   type PasswordResetGateway,
   type SessionController,
 } from '@/modules/identity';
+import { AlertsProvider, type AlertsGateway } from '@/modules/notifications';
 import { PatientsProvider, type PatientsGateway } from '@/modules/patients';
 import { RecommendationsProvider, type RecommendationsGateway } from '@/modules/recommendations';
 import { ReportsProvider, type ReportsGateway } from '@/modules/reports';
@@ -29,6 +30,7 @@ export interface AppDependencies {
   readonly clinicalRegistry: ClinicalRegistryGateway;
   readonly reports: ReportsGateway;
   readonly passwordReset: PasswordResetGateway;
+  readonly alerts: AlertsGateway;
 }
 
 interface AppProvidersProps {
@@ -47,7 +49,7 @@ export function AppProviders({ dependencies, children }: AppProvidersProps) {
                 <ClinicalRegistryProvider gateway={dependencies.clinicalRegistry}>
                   <ReportsProvider gateway={dependencies.reports}>
                     <PasswordResetProvider gateway={dependencies.passwordReset}>
-                      {children}
+                      <AlertsProvider gateway={dependencies.alerts}>{children}</AlertsProvider>
                     </PasswordResetProvider>
                   </ReportsProvider>
                 </ClinicalRegistryProvider>
