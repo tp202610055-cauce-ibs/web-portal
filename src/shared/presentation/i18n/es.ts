@@ -284,6 +284,45 @@ export const es = {
     retry: 'Reintentar',
     draftNote: 'Las definiciones están pendientes de la validación clínica final.',
     results: (count: number) => (count === 1 ? '1 término' : `${count} términos`),
+    request: 'Solicitar que se agregue este término',
+    confirmRequest: (term: string) => `¿Quieres solicitar que se agregue «${term}» al glosario?`,
+    confirm: 'Confirmar solicitud',
+    cancel: 'Cancelar',
+    sending: 'Enviando…',
+    requested: 'La solicitud fue enviada.',
+    alreadyPending: 'Ya pediste este término. Sigue pendiente de revisión.',
+    alreadyExists: 'Ese término ya está en el glosario.',
+    requestError: 'No fue posible enviar la solicitud. Inténtalo de nuevo.',
+    tooLong: 'El término puede tener hasta 100 caracteres.',
+  },
+  notifications: {
+    button: (unread: number) => (unread === 0 ? 'Avisos' : `Avisos, ${unread} sin leer`),
+    title: 'Avisos',
+    close: 'Cerrar avisos',
+    empty: 'No tienes avisos.',
+    loadError: 'No fue posible cargar los avisos en este momento.',
+    retry: 'Reintentar',
+    unread: 'Nuevo',
+    patientCode: (code: string) => `Código ${code}`,
+    openRecord: 'Ver ficha',
+    hidden: (shown: number, total: number) =>
+      `Se muestran los ${shown} avisos más recientes de ${total}.`,
+    announce: (unread: number) =>
+      unread === 1 ? 'Tienes 1 aviso sin leer.' : `Tienes ${unread} avisos sin leer.`,
+    unknownPatient: 'Un paciente',
+    fallback: {
+      PatientLinked: (name: string) => `${name} se vinculó a tu seguimiento.`,
+      PatientSubtypeChanged: (name: string) => `${name} cambió su subtipo de SII.`,
+    },
+  },
+  recommendationHeadline: {
+    Avoid: (count: number) => (count === 1 ? 'evitar 1 alimento' : `evitar ${count} alimentos`),
+    Substitute: (count: number) =>
+      count === 1 ? 'sustituir 1 alimento' : `sustituir ${count} alimentos`,
+    Reduce: (count: number) => (count === 1 ? 'reducir 1 alimento' : `reducir ${count} alimentos`),
+    Suggest: (count: number) =>
+      count === 1 ? 'incorporar 1 alimento' : `incorporar ${count} alimentos`,
+    foodsMore: (count: number) => (count === 1 ? 'y 1 más' : `y ${count} más`),
   },
   glossaryCategory: {
     Nutritional: 'Término nutricional',
@@ -413,6 +452,11 @@ export const es = {
     confirmApprove: 'Confirmar aprobación',
     confirmModify: 'Confirmar modificación',
     confirmReject: 'Confirmar rechazo',
+    editClosed: 'Editar',
+    confirmEdit: 'Guardar cambios',
+    closedWarning:
+      'Esta recomendación ya está cerrada: si guardas un cambio, el sistema lo rechazará y el intento quedará registrado.',
+    explanationLocked: 'La explicación no se puede editar.',
     modifyHint: 'Edita la recomendación y escribe la nota clínica que verá el paciente.',
     noChanges: 'No hiciste cambios. Usa Aprobar tal cual.',
     reviewChanges: 'Revisa los cambios marcados antes de confirmar.',
