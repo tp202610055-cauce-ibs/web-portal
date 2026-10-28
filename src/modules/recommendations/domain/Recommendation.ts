@@ -1,3 +1,5 @@
+import type { FoodPreview } from '@/modules/recommendations/domain/recommendationHeadline';
+
 export type RecommendationStatus =
   | 'Generated'
   | 'PendingReview'
@@ -102,6 +104,7 @@ export interface PatientRecommendation {
   readonly isActive: boolean;
   readonly archivedAt: Date | null;
   readonly archiveReason: ArchiveReason | null;
+  readonly foods: FoodPreview[];
 }
 
 export interface PatientRecommendationsPage {

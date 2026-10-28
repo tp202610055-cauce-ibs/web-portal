@@ -2,6 +2,10 @@ import { Link } from 'react-router';
 
 import { splitByActivity } from '@/modules/recommendations/application/patientRecommendations';
 import type { PatientRecommendation } from '@/modules/recommendations/domain/Recommendation';
+import {
+  recommendationHeadline,
+  type HeadlineTitle,
+} from '@/modules/recommendations/domain/recommendationHeadline';
 import { StatusBadge } from '@/modules/recommendations/presentation/RecommendationBadges';
 import { usePatientRecommendations } from '@/modules/recommendations/presentation/usePatientRecommendations';
 import { formatLimaDate } from '@/shared/presentation/format/limaTime';
@@ -102,9 +106,7 @@ function RecommendationsTable({
         {rows.map((row) => (
           <tr key={row.recommendationId}>
             <th scope="row">
-              <Link to={`/recomendaciones/${row.recommendationId}`}>
-                {row.title ?? es.recommendation.fallbackTitle}
-              </Link>
+              <RowHeadline row={row} />
             </th>
             <td>
               <StatusBadge status={row.status} />
@@ -126,5 +128,39 @@ function RecommendationsTable({
         ))}
       </tbody>
     </table>
+  );
+}
+
+function titleText(title: HeadlineTitle): string {
+  switch (title.kind) {
+    case 'server':
+      return title.text;
+    case 'none':
+      return es.recommendation.fallbackTitle;
+    case 'tally': {
+      const text = title.parts
+        .map(({ action, count }) => es.recommendationHeadline[action](count))
+        .join(', ');
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+  }
+}
+
+// The same headline the mobile app shows, with the foods as a secondary line.
+function RowHeadline({ row }: { readonly row: PatientRecommendation }) {
+  const headline = recommendationHeadline(row.title, row.foods);
+  const names = headline.foodNames.join(', ');
+  return (
+    <>
+      <Link to={`/recomendaciones/${row.recommendationId}`}>{titleText(headline.title)}</Link>
+      {names !== '' && (
+        <span className="field-hint">
+          <br />
+          {headline.moreFoods > 0
+            ? `${names} ${es.recommendationHeadline.foodsMore(headline.moreFoods)}`
+            : names}
+        </span>
+      )}
+    </>
   );
 }

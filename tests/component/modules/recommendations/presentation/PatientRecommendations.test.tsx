@@ -112,4 +112,61 @@ describe('PatientRecommendations', () => {
 
     expect(await screen.findByText(text.noActive)).toBeInTheDocument();
   });
+
+  // CP074 steps 2, 6 and 7: an engine row says what it does, with its foods as a detail.
+  it('engineRow_showsTheSameHeadlineAsTheApp_andItsFoods', async () => {
+    renderList(async () =>
+      toPatientRecommendationsPage({
+        items: [
+          patientRecommendationBody({
+            foods: [
+              { foodName: 'Cebolla cocida', actionType: 'Reduce', substituteFoodName: null },
+              { foodName: 'Pan de trigo blanco', actionType: 'Reduce', substituteFoodName: null },
+            ],
+          }),
+          patientRecommendationBody({
+            recommendationId: '00000000-0000-4000-8000-0000000000d4',
+            foods: [
+              {
+                foodName: 'Avena en hojuelas cocida',
+                actionType: 'Suggest',
+                substituteFoodName: null,
+              },
+              { foodName: 'Zanahoria cocida', actionType: 'Suggest', substituteFoodName: null },
+            ],
+          }),
+        ],
+        page: 1,
+        pageSize: 100,
+        totalCount: 2,
+      }),
+    );
+
+    expect(await screen.findByRole('link', { name: 'Reducir 2 alimentos' })).toBeInTheDocument();
+    expect(screen.getByText('Cebolla cocida, Pan de trigo blanco')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Incorporar 2 alimentos' })).toBeInTheDocument();
+    expect(screen.getByText('Avena en hojuelas cocida, Zanahoria cocida')).toBeInTheDocument();
+  });
+
+  it('moreThanThreeFoods_sayHowManyMore', async () => {
+    renderList(async () =>
+      toPatientRecommendationsPage({
+        items: [
+          patientRecommendationBody({
+            foods: ['A', 'B', 'C', 'D', 'E'].map((foodName) => ({
+              foodName,
+              actionType: 'Avoid' as const,
+              substituteFoodName: null,
+            })),
+          }),
+        ],
+        page: 1,
+        pageSize: 100,
+        totalCount: 1,
+      }),
+    );
+
+    expect(await screen.findByRole('link', { name: 'Evitar 5 alimentos' })).toBeInTheDocument();
+    expect(screen.getByText('A, B, C y 2 más')).toBeInTheDocument();
+  });
 });

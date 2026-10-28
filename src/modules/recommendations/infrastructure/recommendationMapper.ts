@@ -123,6 +123,16 @@ const patientPage = z.object({
         isActive: z.boolean(),
         archivedAt: instant.nullable(),
         archiveReason,
+        foods: z
+          .array(
+            z.object({
+              foodName: z.string().nullable(),
+              actionType: z.enum(['Suggest', 'Reduce', 'Avoid', 'Substitute']),
+              substituteFoodName: z.string().nullable(),
+            }),
+          )
+          .nullable()
+          .optional(),
       }),
     )
     .nullable(),
@@ -135,7 +145,15 @@ export function toPatientRecommendationsPage(payload: unknown): PatientRecommend
   if (!parsed.success) {
     throw new ContractViolationError('PatientRecommendationForNutritionistDtoPagedResult');
   }
-  return { items: parsed.data.items ?? [], totalCount: parsed.data.totalCount };
+  const items = (parsed.data.items ?? []).map(({ foods, ...row }) => ({
+    ...row,
+    foods: (foods ?? []).map((food) => ({
+      foodName: food.foodName,
+      action: food.actionType,
+      substituteFoodName: food.substituteFoodName,
+    })),
+  }));
+  return { items, totalCount: parsed.data.totalCount };
 }
 
 // The queue keeps the server order: oldest generation first.

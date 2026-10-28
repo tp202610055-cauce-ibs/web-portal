@@ -48,6 +48,7 @@ describe('HttpRecommendationsGateway for a patient', () => {
       archivedAt: new Date('2026-10-26T15:00:00Z'),
     });
     expect(page.items[0]?.archiveReason).toBeNull();
+    expect(page.items[0]?.foods).toEqual([]);
   });
 
   it('listForPatient_with403_isUnavailableForThisNutritionist', async () => {
