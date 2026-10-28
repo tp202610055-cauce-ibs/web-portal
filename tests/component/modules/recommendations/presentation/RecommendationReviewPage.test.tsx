@@ -477,13 +477,16 @@ describe('RecommendationReviewPage', () => {
 
     expect(field(es.recommendation.status)).toHaveTextContent(status);
     expect(within(panel).getByRole('status')).toHaveTextContent(notice);
-    // Nothing edits it; when the server allows archiving, that is the only action offered.
+    // No decision is offered. A closed one offers only the edit attempt the server refuses
+    // (CP048), plus archiving when the server allows it; an expired one offers nothing.
     const buttons = within(panel)
       .queryAllByRole('button')
       .map((button) => button.textContent);
-    expect(buttons).toEqual(
-      (body.allowedActions ?? []).includes('Archive') ? [es.archive.open] : [],
-    );
+    const editable = status !== 'Vencida';
+    expect(buttons).toEqual([
+      ...(editable ? [es.decision.editClosed] : []),
+      ...((body.allowedActions ?? []).includes('Archive') ? [es.archive.open] : []),
+    ]);
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 

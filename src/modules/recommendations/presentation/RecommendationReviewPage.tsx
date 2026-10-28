@@ -21,6 +21,7 @@ import {
   hasProblems,
   type RecommendationDraft,
 } from '@/modules/recommendations/domain/recommendationDraft';
+import { canAttemptClosedEdit } from '@/modules/recommendations/domain/closedEdit';
 import { ArchivePanel } from '@/modules/recommendations/presentation/ArchivePanel';
 import { RecommendationContent } from '@/modules/recommendations/presentation/RecommendationContent';
 import { RecommendationEditor } from '@/modules/recommendations/presentation/RecommendationEditor';
@@ -54,14 +55,15 @@ const STATE_NOTICE: Record<RecommendationStatus, string | null> = {
   Expired: es.recommendation.expiredState,
 };
 
-// Refusals that change what the screen shows; the decision form reports the rest.
-function decisionAlert(error: unknown): string | null {
+// Refusals that change what the screen shows; the decision form reports the rest. A refused
+// closed edit shows why that recommendation cannot change, as the CP words it.
+function decisionAlert(error: unknown, closedNotice: string | null): string | null {
   if (!(error instanceof DecisionRefusedError)) {
     return null;
   }
   switch (error.failure.kind) {
     case 'state-conflict':
-      return es.decision.stateConflict;
+      return closedNotice ?? es.decision.stateConflict;
     case 'expired':
       return es.decision.expired;
     case 'access-denied':
@@ -93,6 +95,7 @@ const OUTCOME: Record<PanelDecision, ReviewOutcome> = {
   approve: 'approved',
   modify: 'modified',
   reject: 'rejected',
+  edit: 'modified',
 };
 
 function RecommendationReview({ recommendationId }: { readonly recommendationId: string }) {
@@ -103,9 +106,13 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
   const [draft, setDraft] = useState<RecommendationDraft | null>(null);
   const [showDraftProblems, setShowDraftProblems] = useState(false);
   const [blocked, setBlocked] = useState<string | null>(null);
-  const alert = decisionAlert(decision.error);
+  const [closedNotice, setClosedNotice] = useState<string | null>(null);
+  const [panelKey, setPanelKey] = useState(0);
+  const closed = detail.data !== undefined && canAttemptClosedEdit(detail.data);
+  const alert = decisionAlert(decision.error, closedNotice);
 
   function send(input: DecisionInput) {
+    setClosedNotice(null);
     decision.mutate(input, {
       onSuccess: () =>
         void navigate('/revisiones', { state: reviewOutcomeState(OUTCOME[input.decision]) }),
@@ -114,9 +121,9 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
 
   // The draft is kept in memory while the screen stays open, also after cancelling or a failed attempt.
   function changeDecision(next: PanelDecision | null) {
-    setEditing(next === 'modify');
+    setEditing(next === 'modify' || next === 'edit');
     setBlocked(null);
-    if (next === 'modify' && detail.data !== undefined) {
+    if ((next === 'modify' || next === 'edit') && detail.data !== undefined) {
       const original = detail.data;
       setDraft((current) => current ?? draftFrom(original));
     }
@@ -132,7 +139,37 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
     setBlocked(null);
   }
 
+  // The closed edit skips the draft checks so the attempt reaches the server; only the limits its
+  // validator applies are kept, or the request would stop there without being recorded.
+  function submitClosedEdit(note: string) {
+    if (detail.data === undefined || draft === null) {
+      return;
+    }
+    const original = detail.data;
+    if (checkDraft(original, draft).title === 'too-long') {
+      setShowDraftProblems(true);
+      setBlocked(es.decision.reviewChanges);
+      return;
+    }
+    setClosedNotice(STATE_NOTICE[original.status]);
+    decision.mutate(
+      { decision: 'modify', modification: buildModification(original, draft, note), fresh: true },
+      {
+        onSuccess: () => void navigate('/revisiones', { state: reviewOutcomeState(OUTCOME.edit) }),
+        onError: () => {
+          setEditing(false);
+          setDraft(null);
+          setPanelKey((value) => value + 1);
+        },
+      },
+    );
+  }
+
   function submit({ decision: chosen, note }: PanelSubmission) {
+    if (chosen === 'edit') {
+      submitClosedEdit(note);
+      return;
+    }
     if (chosen !== 'modify') {
       send({ decision: chosen, note });
       return;
@@ -170,13 +207,24 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
         <LoadFailure error={detail.error} onRetry={() => void detail.refetch()} />
       ) : (
         <div className="review-layout">
-          {editing && draft !== null && detail.data.allowedActions.includes('Modify') ? (
-            <RecommendationEditor
-              original={detail.data}
-              draft={draft}
-              showProblems={showDraftProblems}
-              onChange={changeDraft}
-            />
+          {editing &&
+          draft !== null &&
+          (detail.data.allowedActions.includes('Modify') || closed) ? (
+            <div className="stack">
+              <RecommendationEditor
+                original={detail.data}
+                draft={draft}
+                showProblems={showDraftProblems}
+                onChange={changeDraft}
+              />
+              {closed && (
+                <section aria-labelledby="locked-explanation" className="card stack">
+                  <h2 id="locked-explanation">{es.recommendation.explanationTitle}</h2>
+                  <p className="notice notice--info">{es.decision.explanationLocked}</p>
+                  <p>{detail.data.aiExplanation ?? es.recommendation.noExplanation}</p>
+                </section>
+              )}
+            </div>
           ) : (
             <div className="stack">
               <RecommendationContent detail={detail.data} />
@@ -195,6 +243,8 @@ function RecommendationReview({ recommendationId }: { readonly recommendationId:
             <h2 id="decision-title">{es.decision.title}</h2>
             <StateNotice detail={detail.data} alert={alert} />
             <ReviewDecisionPanel
+              key={panelKey}
+              closedEdit={closed ? { note: detail.data.nutritionistNote ?? '' } : null}
               actions={detail.data.allowedActions}
               submitting={decision.isPending}
               error={decision.error}
