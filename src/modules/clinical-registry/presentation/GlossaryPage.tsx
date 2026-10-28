@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import {
   searchGlossary,
   similarTerms,
+  TERM_REQUEST_MAX_LENGTH,
+  TermRequestRefusedError,
   type Glossary,
 } from '@/modules/clinical-registry/domain/Glossary';
 import { useClinicalRegistryGateway } from '@/modules/clinical-registry/presentation/ClinicalRegistryContext';
@@ -83,6 +85,9 @@ function GlossarySearch({ glossary }: { readonly glossary: Glossary }) {
           </div>
         </section>
       )}
+      {matches.length === 0 && query.trim() !== '' && (
+        <TermRequest key={query.trim()} term={query.trim()} />
+      )}
       <ul className="stack">
         {matches.map((entry) => (
           <li key={entry.term}>
@@ -94,6 +99,73 @@ function GlossarySearch({ glossary }: { readonly glossary: Glossary }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function requestMessage(error: unknown): string {
+  return error instanceof TermRequestRefusedError && error.reason === 'already-exists'
+    ? text.alreadyExists
+    : text.requestError;
+}
+
+// CP089: the portal is used only by nutritionists, who may ask for a missing term. The server
+// keeps one pending request per term and nutritionist.
+function TermRequest({ term }: { readonly term: string }) {
+  const gateway = useClinicalRegistryGateway();
+  const [confirming, setConfirming] = useState(false);
+  const request = useMutation({ mutationFn: () => gateway.requestTerm(term) });
+  const tooLong = term.length > TERM_REQUEST_MAX_LENGTH;
+
+  if (request.isSuccess) {
+    return (
+      <p role="status" className="notice notice--success">
+        {request.data === 'created' ? text.requested : text.alreadyPending}
+      </p>
+    );
+  }
+  return (
+    <div className="stack">
+      {request.isError && (
+        <p role="alert" className="notice notice--error">
+          {requestMessage(request.error)}
+        </p>
+      )}
+      {confirming ? (
+        <div className="stack">
+          <p>{text.confirmRequest(term)}</p>
+          <div className="actions">
+            <button type="button" className="btn-tertiary" onClick={() => setConfirming(false)}>
+              {text.cancel}
+            </button>
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={request.isPending}
+              onClick={() => request.mutate()}
+            >
+              {request.isPending ? text.sending : text.confirm}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={tooLong}
+            aria-describedby={tooLong ? 'term-request-too-long' : undefined}
+            onClick={() => setConfirming(true)}
+          >
+            {text.request}
+          </button>
+          {tooLong && (
+            <p id="term-request-too-long" className="field-hint">
+              {text.tooLong}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { glossaryFrom } from '@/modules/clinical-registry/domain/Glossary';
+import type { ClinicalRegistryGateway } from '@/modules/clinical-registry/application/ClinicalRegistryGateway';
+import { glossaryFrom, TermRequestRefusedError } from '@/modules/clinical-registry/domain/Glossary';
 import { GlossaryPage } from '@/modules/clinical-registry/presentation/GlossaryPage';
 import { ServiceUnavailableError } from '@/shared/domain/errors';
 import { es } from '@/shared/presentation/i18n/es';
@@ -31,9 +32,14 @@ const glossaryCp068 = glossaryFrom(
   'draft-pending-clinical-review',
 );
 
-function renderGlossary(getGlossary = async () => glossaryCp068) {
+function renderGlossary(
+  getGlossary = async () => glossaryCp068,
+  requestTerm: ClinicalRegistryGateway['requestTerm'] = async () => 'created',
+) {
   return render(
-    <ClinicalRegistryTestProviders registry={fakeClinicalRegistryGateway({ getGlossary })}>
+    <ClinicalRegistryTestProviders
+      registry={fakeClinicalRegistryGateway({ getGlossary, requestTerm })}
+    >
       <GlossaryPage />
     </ClinicalRegistryTestProviders>,
   );
@@ -105,5 +111,62 @@ describe('GlossaryPage', () => {
 
     expect(await screen.findByText(es.glossary.empty)).toBeInTheDocument();
     expect(screen.queryByText(es.glossary.draftNote)).not.toBeInTheDocument();
+  });
+
+  // CP089 steps 3 to 5: not found, the option to request it, confirm and the confirmation.
+  it('unknownTerm_canBeRequested_afterConfirming', async () => {
+    const requestTerm = vi.fn<ClinicalRegistryGateway['requestTerm']>(async () => 'created');
+    renderGlossary(undefined, requestTerm);
+    const user = await search('disacaridasas');
+
+    await user.click(screen.getByRole('button', { name: es.glossary.request }));
+    expect(screen.getByText(es.glossary.confirmRequest('disacaridasas'))).toBeInTheDocument();
+    expect(requestTerm).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: es.glossary.confirm }));
+
+    expect(await screen.findByText(es.glossary.requested)).toBeInTheDocument();
+    expect(requestTerm).toHaveBeenCalledWith('disacaridasas');
+  });
+
+  it.each([
+    [async () => 'already-pending', es.glossary.alreadyPending],
+    [
+      async () => {
+        throw new TermRequestRefusedError('already-exists');
+      },
+      es.glossary.alreadyExists,
+    ],
+    [
+      async () => {
+        throw new Error('down');
+      },
+      es.glossary.requestError,
+    ],
+  ] as [ClinicalRegistryGateway['requestTerm'], string][])(
+    'request_outcome_%#_hasItsOwnText',
+    async (requestTerm, message) => {
+      renderGlossary(undefined, requestTerm);
+      const user = await search('xyzqw');
+
+      await user.click(screen.getByRole('button', { name: es.glossary.request }));
+      await user.click(screen.getByRole('button', { name: es.glossary.confirm }));
+
+      expect(await screen.findByText(message)).toBeInTheDocument();
+    },
+  );
+
+  it('aTermOver100Characters_cannotBeRequested', async () => {
+    renderGlossary();
+    await search('x'.repeat(101));
+
+    expect(screen.getByRole('button', { name: es.glossary.request })).toBeDisabled();
+    expect(screen.getByText(es.glossary.tooLong)).toBeInTheDocument();
+  });
+
+  it('aFoundTerm_offersNoRequest', async () => {
+    renderGlossary();
+    await search('FODMAP');
+
+    expect(screen.queryByRole('button', { name: es.glossary.request })).not.toBeInTheDocument();
   });
 });

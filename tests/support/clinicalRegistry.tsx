@@ -15,6 +15,7 @@ export function fakeClinicalRegistryGateway(
   return {
     getPatientHistory: () => new Promise(() => undefined),
     getGlossary: () => new Promise(() => undefined),
+    requestTerm: () => new Promise(() => undefined),
     ...overrides,
   };
 }

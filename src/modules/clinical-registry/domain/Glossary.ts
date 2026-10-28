@@ -73,3 +73,19 @@ export function similarTerms(glossary: Glossary, query: string): GlossaryTerm[] 
     .sort((a, b) => a.normalizedTerm.localeCompare(b.normalizedTerm))
     .slice(0, MAX_SIMILAR_TERMS);
 }
+
+// A requested term is 1 to 100 characters once trimmed, as the server measures it.
+export const TERM_REQUEST_MAX_LENGTH = 100;
+
+export type TermRequestOutcome = 'created' | 'already-pending';
+export type TermRequestRefusal = 'already-exists' | 'invalid';
+
+export class TermRequestRefusedError extends Error {
+  readonly reason: TermRequestRefusal;
+
+  constructor(reason: TermRequestRefusal) {
+    super(`The term request was refused: ${reason}.`);
+    this.name = 'TermRequestRefusedError';
+    this.reason = reason;
+  }
+}

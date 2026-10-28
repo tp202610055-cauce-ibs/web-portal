@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 import type { ClinicalRegistryGateway } from '@/modules/clinical-registry/application/ClinicalRegistryGateway';
-import { glossaryFrom, type Glossary } from '@/modules/clinical-registry/domain/Glossary';
+import {
+  glossaryFrom,
+  TermRequestRefusedError,
+  type Glossary,
+  type TermRequestOutcome,
+} from '@/modules/clinical-registry/domain/Glossary';
 import {
   HistoryAccessDeniedError,
   type HistoryEvent,
@@ -9,9 +14,11 @@ import {
 import { toHistoryEvents } from '@/modules/clinical-registry/infrastructure/historyMapper';
 import { ContractViolationError, ServiceUnavailableError } from '@/shared/domain/errors';
 import type { ApiClient } from '@/shared/infrastructure/apiClient';
+import { toApiProblem } from '@/shared/infrastructure/problemReader';
 
 interface ApiResult {
   readonly data?: unknown;
+  readonly error?: unknown;
   readonly response: Response;
 }
 
@@ -76,5 +83,23 @@ export class HttpClinicalRegistryGateway implements ClinicalRegistryGateway {
         : [{ term: entry.term, definition: entry.definition ?? '', category: entry.category }],
     );
     return glossaryFrom(terms, parsed.data.contentStatus);
+  }
+
+  // 201 is a new request and 200 the one already pending; the term travels trimmed.
+  async requestTerm(term: string): Promise<TermRequestOutcome> {
+    const { error, response } = await read(() =>
+      this.api.POST('/api/v1/glossary/term-requests', { body: { term: term.trim() } }),
+    );
+    if (response.ok) {
+      return response.status === 201 ? 'created' : 'already-pending';
+    }
+    const problem = toApiProblem(response.status, error);
+    if (response.status === 409 && problem.errorCode === 'glossary_term_already_exists') {
+      throw new TermRequestRefusedError('already-exists');
+    }
+    if (response.status === 400) {
+      throw new TermRequestRefusedError('invalid');
+    }
+    throw new ServiceUnavailableError();
   }
 }

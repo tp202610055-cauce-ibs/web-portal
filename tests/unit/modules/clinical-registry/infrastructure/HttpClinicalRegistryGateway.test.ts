@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { TermRequestRefusedError } from '@/modules/clinical-registry/domain/Glossary';
 import { HistoryAccessDeniedError } from '@/modules/clinical-registry/domain/PatientDiary';
 import { HttpClinicalRegistryGateway } from '@/modules/clinical-registry/infrastructure/HttpClinicalRegistryGateway';
 import { HttpFoodCatalogGateway } from '@/modules/clinical-registry/infrastructure/HttpFoodCatalogGateway';
@@ -127,5 +128,57 @@ describe('HttpFoodCatalogGateway.getFood', () => {
     );
 
     await expect(foods.getFood(CAUSA_ID)).rejects.toBeInstanceOf(ServiceUnavailableError);
+  });
+
+  // CP089: 201 is a new request; 200 means the same nutritionist already has it pending.
+  it.each([
+    [201, 'created'],
+    [200, 'already-pending'],
+  ] as const)('requestTerm_with%i_is %s', async (status, outcome) => {
+    let body: unknown = null;
+    server.use(
+      http.post(`${BASE}/api/v1/glossary/term-requests`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json(
+          {
+            id: 'r1',
+            term: 'disacaridasas',
+            status: 'Pending',
+            requestedAt: '2026-10-27T15:00:00Z',
+          },
+          { status },
+        );
+      }),
+    );
+
+    expect(await gateway.requestTerm(' disacaridasas ')).toBe(outcome);
+    expect(body).toEqual({ term: 'disacaridasas' });
+  });
+
+  it.each([
+    [409, 'glossary_term_already_exists', 'already-exists'],
+    [400, 'validation_error', 'invalid'],
+  ] as const)('requestTerm_with%i_isRefused', async (status, errorCode, reason) => {
+    server.use(
+      http.post(`${BASE}/api/v1/glossary/term-requests`, () =>
+        HttpResponse.json({ errorCode }, { status }),
+      ),
+    );
+
+    const error = await gateway.requestTerm('x').catch((e) => e);
+
+    expect(error).toBeInstanceOf(TermRequestRefusedError);
+    expect((error as TermRequestRefusedError).reason).toBe(reason);
+  });
+
+  it('requestTerm_onA500_isUnavailable', async () => {
+    server.use(
+      http.post(
+        `${BASE}/api/v1/glossary/term-requests`,
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+
+    await expect(gateway.requestTerm('x')).rejects.toBeInstanceOf(ServiceUnavailableError);
   });
 });
