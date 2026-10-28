@@ -237,6 +237,7 @@ export function patientRecommendationBody(
     archivedAt: null,
     // The snapshot does not mark it as nullable, but the backend sends null while it is active.
     archiveReason: null as unknown as PatientRecommendationDto['archiveReason'],
+    foods: [],
     ...overrides,
   };
 }
