@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react';
+import { onlineManager } from '@tanstack/react-query';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -19,6 +20,7 @@ describe('triage panel from the root', () => {
   let app: AppComposition | null = null;
 
   afterEach(() => {
+    onlineManager.setOnline(true);
     app?.sessionService.dispose();
     app = null;
   });
@@ -64,6 +66,29 @@ describe('triage panel from the root', () => {
       expect(await screen.findByRole('table')).toBeInTheDocument();
     },
   );
+
+  // CP051 variant A with the browser really offline: the query must not pause and hide the error.
+  it('menuEntry_whileTheBrowserIsOffline_showsTheErrorAndRecoversAfterReconnecting', async () => {
+    const user = userEvent.setup();
+    const current = await openLoadedPanel();
+    server.use(http.get(PATIENTS, () => HttpResponse.error()));
+    act(() => onlineManager.setOnline(false));
+
+    await user.click(screen.getByRole('link', { name: es.nav.patients }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(es.patients.loadError);
+    expect(screen.getByRole('button', { name: es.patients.retry })).toBeInTheDocument();
+    expect(screen.queryByRole('table')).toBeNull();
+    expectSessionIntact(current);
+
+    act(() => onlineManager.setOnline(true));
+    await waitFor(() => expect(current.queryClient.isFetching()).toBe(0));
+    server.use(http.get(PATIENTS, () => HttpResponse.json(cp049Panel)));
+    await user.click(screen.getByRole('button', { name: es.patients.retry }));
+
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expectSessionIntact(current);
+  });
 
   // CP051 with an expired token: the renewal fails by network, the panel errs, the session stays.
   it('menuEntry_whenRenewalFailsByNetwork_showsTheErrorAndKeepsTheSession', async () => {
