@@ -1,5 +1,9 @@
 import type { PatientsGateway } from '@/modules/patients/application/PatientsGateway';
-import type { PatientDetail, PatientEvolution } from '@/modules/patients/domain/PatientRecord';
+import type {
+  IbsSssCycle,
+  PatientDetail,
+  PatientEvolution,
+} from '@/modules/patients/domain/PatientRecord';
 
 // The route carries a UUID; anything else is not a patient and never reaches the server.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,4 +24,8 @@ export function getPatientEvolution(
   patientId: string,
 ): Promise<PatientEvolution> {
   return gateway.getEvolution(patientId);
+}
+
+export function getIbsSssCycle(gateway: PatientsGateway, patientId: string): Promise<IbsSssCycle> {
+  return gateway.getIbsSssCycle(patientId);
 }

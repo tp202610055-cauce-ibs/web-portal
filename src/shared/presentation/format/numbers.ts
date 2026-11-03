@@ -8,6 +8,13 @@ const twoDecimals = new Intl.NumberFormat('es-PE', {
   maximumFractionDigits: 2,
 });
 
+const amount = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 });
+
+// A quantity as the patient wrote it: no forced decimals.
+export function formatAmount(value: number): string {
+  return amount.format(value);
+}
+
 export function formatOneDecimal(value: number): string {
   return oneDecimal.format(value);
 }

@@ -54,6 +54,15 @@ export interface PatientEvolution {
   readonly registrationFrequency14d: number;
 }
 
+export type IbsSssCycleStatus = 'None' | 'Pending' | 'Missed' | 'Completed';
+
+// The current IBS-SSS questionnaire schedule as the server sees it; never recomputed here.
+export interface IbsSssCycle {
+  readonly status: IbsSssCycleStatus;
+  readonly dueDate: Date | null;
+  readonly completedAt: Date | null;
+}
+
 export class PatientAccessDeniedError extends Error {
   constructor() {
     super('The nutritionist is not assigned to this patient.');

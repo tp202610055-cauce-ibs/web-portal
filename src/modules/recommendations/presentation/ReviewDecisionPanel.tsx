@@ -11,7 +11,8 @@ import {
 } from '@/modules/recommendations/domain/Recommendation';
 import { es } from '@/shared/presentation/i18n/es';
 
-export type PanelDecision = ReviewDecision | 'modify';
+// 'edit' is the attempt on a closed recommendation, sent so the server refuses and records it.
+export type PanelDecision = ReviewDecision | 'modify' | 'edit';
 
 export interface PanelSubmission {
   readonly decision: PanelDecision;
@@ -24,7 +25,7 @@ const PROBLEM_MESSAGE: Record<ClinicalNoteProblem, string> = {
   'too-long': es.decision.noteTooLong,
 };
 
-const ACTION_OF: Record<PanelDecision, RecommendationAction> = {
+const ACTION_OF: Record<Exclude<PanelDecision, 'edit'>, RecommendationAction> = {
   approve: 'Approve',
   modify: 'Modify',
   reject: 'Reject',
@@ -34,15 +35,17 @@ const LABEL: Record<PanelDecision, string> = {
   approve: es.decision.approve,
   modify: es.decision.modify,
   reject: es.decision.reject,
+  edit: es.decision.editClosed,
 };
 
 const CONFIRM: Record<PanelDecision, string> = {
   approve: es.decision.confirmApprove,
   modify: es.decision.confirmModify,
   reject: es.decision.confirmReject,
+  edit: es.decision.confirmEdit,
 };
 
-const ORDER: readonly PanelDecision[] = ['approve', 'modify', 'reject'];
+const ORDER: readonly Exclude<PanelDecision, 'edit'>[] = ['approve', 'modify', 'reject'];
 
 interface ReviewDecisionPanelProps {
   readonly actions: RecommendationAction[];
@@ -52,6 +55,8 @@ interface ReviewDecisionPanelProps {
   readonly onSubmit: (input: PanelSubmission) => void;
   readonly onDismissError: () => void;
   readonly onDecisionChange: (decision: PanelDecision | null) => void;
+  // Offers the closed edit; its note starts as the one already recorded.
+  readonly closedEdit?: { readonly note: string } | null;
 }
 
 // The server's own text when it refuses the note; the client check only warns before sending.
@@ -89,6 +94,7 @@ export function ReviewDecisionPanel({
   onSubmit,
   onDismissError,
   onDecisionChange,
+  closedEdit = null,
 }: ReviewDecisionPanelProps) {
   const [decision, setDecision] = useState<PanelDecision | null>(null);
   const [note, setNote] = useState('');
@@ -97,10 +103,12 @@ export function ReviewDecisionPanel({
   const approveRef = useRef<HTMLButtonElement>(null);
   const modifyRef = useRef<HTMLButtonElement>(null);
   const rejectRef = useRef<HTMLButtonElement>(null);
+  const editRef = useRef<HTMLButtonElement>(null);
   const openers: Record<PanelDecision, RefObject<HTMLButtonElement | null>> = {
     approve: approveRef,
     modify: modifyRef,
     reject: rejectRef,
+    edit: editRef,
   };
 
   useEffect(() => {
@@ -109,12 +117,18 @@ export function ReviewDecisionPanel({
     }
   }, [decision]);
 
-  const available = ORDER.filter((option) => actions.includes(ACTION_OF[option]));
+  const available: PanelDecision[] = [
+    ...ORDER.filter((option) => actions.includes(ACTION_OF[option])),
+    ...(closedEdit === null ? [] : (['edit'] as const)),
+  ];
   if (available.length === 0) {
     return null;
   }
 
   function open(next: PanelDecision) {
+    if (next === 'edit' && closedEdit !== null) {
+      setNote(closedEdit.note);
+    }
     setDecision(next);
     setProblem(null);
     onDismissError();
@@ -160,6 +174,7 @@ export function ReviewDecisionPanel({
 
   return (
     <div className="stack">
+      {closedEdit !== null && <p className="notice notice--info">{es.decision.closedWarning}</p>}
       <div className="actions">
         {available.map((option) => (
           <button

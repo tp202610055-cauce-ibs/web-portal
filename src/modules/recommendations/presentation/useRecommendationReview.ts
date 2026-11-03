@@ -20,7 +20,12 @@ import { RECOMMENDATIONS_QUERY_KEY } from '@/modules/recommendations/presentatio
 
 export type DecisionInput =
   | { readonly decision: ReviewDecision; readonly note: string }
-  | { readonly decision: 'modify'; readonly modification: ModificationRequest };
+  | {
+      readonly decision: 'modify';
+      readonly modification: ModificationRequest;
+      // A closed edit: every confirmation is a new request with its own key.
+      readonly fresh?: boolean;
+    };
 
 function detailKey(recommendationId: string) {
   return [...RECOMMENDATIONS_QUERY_KEY, 'detail', recommendationId] as const;
@@ -55,7 +60,8 @@ export function useReviewDecision(recommendationId: string) {
   const attempt = useRef<DecisionAttempt | null>(null);
   return useMutation({
     mutationFn: (input: DecisionInput) => {
-      const current = attemptFor(attempt.current, contentOf(input), () => crypto.randomUUID());
+      const previous = input.decision === 'modify' && input.fresh === true ? null : attempt.current;
+      const current = attemptFor(previous, contentOf(input), () => crypto.randomUUID());
       attempt.current = current;
       return input.decision === 'modify'
         ? submitModification(gateway, recommendationId, input.modification, current.key)

@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import type { PatientDetail, PatientEvolution } from '@/modules/patients/domain/PatientRecord';
+import type {
+  IbsSssCycle,
+  PatientDetail,
+  PatientEvolution,
+} from '@/modules/patients/domain/PatientRecord';
 import { ContractViolationError } from '@/shared/domain/errors';
 
 const instant = z.iso.datetime({ offset: true }).transform((value) => new Date(value));
@@ -62,6 +66,24 @@ const evolution = z.object({
   significantClinicalResponse: z.boolean(),
   registrationFrequency14d: z.number().int().nonnegative(),
 });
+
+const cycle = z.object({
+  status: z.enum(['None', 'Pending', 'Missed', 'Completed']),
+  dueDate: instant.nullable(),
+  completedAt: instant.nullable().optional(),
+});
+
+export function toIbsSssCycle(payload: unknown): IbsSssCycle {
+  const parsed = cycle.safeParse(payload);
+  if (!parsed.success) {
+    throw new ContractViolationError('IbsSssCycleStatusDto');
+  }
+  return {
+    status: parsed.data.status,
+    dueDate: parsed.data.dueDate,
+    completedAt: parsed.data.completedAt ?? null,
+  };
+}
 
 export function toPatientDetail(payload: unknown): PatientDetail {
   const parsed = detail.safeParse(payload);

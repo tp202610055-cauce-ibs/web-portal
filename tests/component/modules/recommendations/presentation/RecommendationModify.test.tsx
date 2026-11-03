@@ -4,7 +4,7 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
-import { FoodCatalogProvider } from '@/modules/clinical-registry';
+import { ClinicalRegistryProvider, FoodCatalogProvider } from '@/modules/clinical-registry';
 import { toFoodSummaries } from '@/modules/clinical-registry/infrastructure/foodSummaryMapper';
 import { PatientsProvider } from '@/modules/patients';
 import type { RecommendationsGateway } from '@/modules/recommendations/application/RecommendationsGateway';
@@ -14,7 +14,14 @@ import { RecommendationReviewPage } from '@/modules/recommendations/presentation
 import { RecommendationsProvider } from '@/modules/recommendations/presentation/RecommendationsContext';
 import { es } from '@/shared/presentation/i18n/es';
 
-import { DAIRY_ID, dairyResults, foodBody, MILK_ID } from '../../../../support/foods';
+import {
+  DAIRY_ID,
+  dairyResults,
+  fakeFoodCatalogGateway,
+  foodBody,
+  MILK_ID,
+} from '../../../../support/foods';
+import { fakeClinicalRegistryGateway } from '../../../../support/clinicalRegistry';
 import { fakePatientsGateway } from '../../../../support/patients';
 import {
   CARROT_ID,
@@ -44,11 +51,13 @@ function renderModify(overrides: Partial<RecommendationsGateway>) {
   render(
     <QueryClientProvider client={new QueryClient()}>
       <PatientsProvider gateway={fakePatientsGateway()}>
-        <FoodCatalogProvider gateway={{ search: async () => dairy }}>
+        <FoodCatalogProvider gateway={fakeFoodCatalogGateway({ search: async () => dairy })}>
           <RecommendationsProvider
             gateway={fakeRecommendationsGateway({ getDetail: async () => pending, ...overrides })}
           >
-            <RouterProvider router={router} />
+            <ClinicalRegistryProvider gateway={fakeClinicalRegistryGateway()}>
+              <RouterProvider router={router} />
+            </ClinicalRegistryProvider>
           </RecommendationsProvider>
         </FoodCatalogProvider>
       </PatientsProvider>
@@ -513,12 +522,16 @@ describe('modifying a recommendation', () => {
       <QueryClientProvider client={new QueryClient()}>
         <PatientsProvider gateway={fakePatientsGateway()}>
           <FoodCatalogProvider
-            gateway={{ search: async () => toFoodSummaries([foodBody({ name: null })]) }}
+            gateway={fakeFoodCatalogGateway({
+              search: async () => toFoodSummaries([foodBody({ name: null })]),
+            })}
           >
             <RecommendationsProvider
               gateway={fakeRecommendationsGateway({ getDetail: async () => pending })}
             >
-              <RouterProvider router={router} />
+              <ClinicalRegistryProvider gateway={fakeClinicalRegistryGateway()}>
+                <RouterProvider router={router} />
+              </ClinicalRegistryProvider>
             </RecommendationsProvider>
           </FoodCatalogProvider>
         </PatientsProvider>

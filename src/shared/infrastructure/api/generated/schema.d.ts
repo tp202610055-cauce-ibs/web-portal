@@ -1,4 +1,4 @@
-// Generated from openapi/openapi-v1.8.0.json (sha256 df871dd2ca0ed2c803900b218a91c421153c4b8535d91bb3b79be0438a3cbec1) by npm run api:generate.
+// Generated from openapi/openapi-v1.10.0.json (sha256 fb22755d39a0efadc9f158b6b99ec61dea052795c1759c9f5232993bb4a7157a) by npm run api:generate.
 // Do not edit by hand.
 export interface paths {
     "/api/v1/admin/nutritionists": {
@@ -831,6 +831,83 @@ export interface paths {
             responses: {
                 /** @description OK */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password-reset/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comprueba si un enlace de restablecimiento todavía sirve, sin consumirlo. Responde lo mismo
+         *     para un token inexistente, vencido o ya usado.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Token recibido por correo. */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ValidatePasswordResetRequest"];
+                    "text/json": components["schemas"]["ValidatePasswordResetRequest"];
+                    "application/*+json": components["schemas"]["ValidatePasswordResetRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1987,6 +2064,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/foods/{foodId}/allergen-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Indica si un alimento del catálogo choca con las alergias declaradas del paciente y con cuáles, con la misma regla que el chequeo al guardar un alimento personalizado. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Identificador del alimento. */
+                    foodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FoodAllergenCheckResult"];
+                        "application/json": components["schemas"]["FoodAllergenCheckResult"];
+                        "text/json": components["schemas"]["FoodAllergenCheckResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/glossary": {
         parameters: {
             query?: never;
@@ -2137,6 +2321,128 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/glossary/term-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pide que se agregue un término al glosario. Si el mismo nutricionista ya lo pidió y sigue pendiente, devuelve esa solicitud con 200 sin duplicarla. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Término pedido. */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RequestGlossaryTermRequest"];
+                    "text/json": components["schemas"]["RequestGlossaryTermRequest"];
+                    "application/*+json": components["schemas"]["RequestGlossaryTermRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GlossaryTermRequestResult"];
+                        "application/json": components["schemas"]["GlossaryTermRequestResult"];
+                        "text/json": components["schemas"]["GlossaryTermRequestResult"];
+                    };
+                };
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GlossaryTermRequestResult"];
+                        "application/json": components["schemas"]["GlossaryTermRequestResult"];
+                        "text/json": components["schemas"]["GlossaryTermRequestResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2834,6 +3140,285 @@ export interface paths {
                 };
                 /** @description Conflict */
                 409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista los avisos del nutricionista, del más reciente al más antiguo, con el conteo de no leídos. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Número de página, desde 1. */
+                    page?: number;
+                    /** @description Tamaño de página, de 1 a 100. */
+                    pageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["NutritionistAlertListResult"];
+                        "application/json": components["schemas"]["NutritionistAlertListResult"];
+                        "text/json": components["schemas"]["NutritionistAlertListResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/alerts/{alertId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marca como leído un aviso propio. Repetirlo no cambia la fecha de la primera lectura. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Identificador del aviso. */
+                    alertId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/alerts/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marca como leídos todos los avisos propios. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3815,6 +4400,270 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/nutritionists/me/patients/{patientId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Devuelve el diario de un paciente asignado (comidas, síntomas y notas clínicas) en un rango de
+         *     fechas, del más reciente al más antiguo. Requiere una asignación activa y queda auditado.
+         * @description Devuelve como máximo 500 comidas y 500 síntomas del rango; las notas clínicas no tienen tope.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Inicio del rango, obligatorio e inclusivo, con zona horaria (`Z` u offset). Filtra comidas y síntomas por `clientCreatedAt` y notas por `createdAt`. */
+                    from: string;
+                    /** @description Fin del rango, obligatorio e inclusivo, con zona horaria y no anterior a `from`. */
+                    to: string;
+                };
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                        "application/json": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                        "text/json": (components["schemas"]["MealHistoryEvent"] | components["schemas"]["SymptomHistoryEvent"] | components["schemas"]["ClinicalNoteHistoryEvent"])[];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/patients/{patientId}/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista, paginadas, todas las recomendaciones de un paciente asignado: vigentes, en revisión, con
+         *     decisión final y archivadas. Requiere una asignación activa y queda auditado.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Número de página. */
+                    page?: number;
+                    /** @description Tamaño de página, de 1 a 100. */
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                        "application/json": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                        "text/json": components["schemas"]["PatientRecommendationForNutritionistDtoPagedResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nutritionists/me/patients/{patientId}/ibs-sss-cycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Devuelve el estado del ciclo vigente del cuestionario IBS-SSS de un paciente asignado. Requiere
+         *     una asignación activa y queda auditado.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Identificador de la cuenta del paciente. */
+                    patientId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IbsSssCycleStatusDto"];
+                        "application/json": components["schemas"]["IbsSssCycleStatusDto"];
+                        "text/json": components["schemas"]["IbsSssCycleStatusDto"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/symptoms/{id}/meal-association": {
         parameters: {
             query?: never;
@@ -4130,6 +4979,91 @@ export interface paths {
                         "text/plain": components["schemas"]["ProblemDetails"];
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations/me/review-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indica si el paciente autenticado tiene una recomendación en revisión por su nutricionista, sin
+         *     mostrar su contenido.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["RecommendationReviewStatusDto"];
+                        "application/json": components["schemas"]["RecommendationReviewStatusDto"];
+                        "text/json": components["schemas"]["RecommendationReviewStatusDto"];
                     };
                 };
                 /** @description Unauthorized */
@@ -6851,6 +7785,13 @@ export interface components {
         FeedbackOutcome: "Improvement" | "NoChange" | "Worsening";
         /** @enum {string} */
         FodmapLevel: "Low" | "Moderate" | "High";
+        FoodAllergenCheckResult: {
+            /** Format: uuid */
+            foodId: string;
+            foodName: string | null;
+            hasAllergenConflict: boolean;
+            allergens: string[] | null;
+        };
         FoodItemDetail: {
             /** Format: uuid */
             foodId: string;
@@ -7014,6 +7955,16 @@ export interface components {
             definition: string | null;
             category: components["schemas"]["GlossaryCategory"];
         };
+        GlossaryTermRequestResult: {
+            /** Format: uuid */
+            id: string;
+            term: string | null;
+            status: components["schemas"]["GlossaryTermRequestStatus"];
+            /** Format: date-time */
+            requestedAt: string;
+        };
+        /** @enum {string} */
+        GlossaryTermRequestStatus: "Pending";
         HistoryEvent: {
             eventType: string;
             /** Format: date-time */
@@ -7042,6 +7993,17 @@ export interface components {
             completedAt: string;
             /** Format: date */
             nextAssessmentDate: string | null;
+        };
+        /** @enum {string} */
+        IbsSssCycleStatus: "None" | "Pending" | "Missed" | "Completed";
+        IbsSssCycleStatusDto: {
+            status: components["schemas"]["IbsSssCycleStatus"];
+            /** Format: date-time */
+            dueDate: string | null;
+            /** Format: date-time */
+            reminderSentAt: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
         };
         IbsSssEvolutionEntry: {
             assessment: components["schemas"]["IbsSssAssessmentSummary"];
@@ -7195,6 +8157,34 @@ export interface components {
             cumulativeChange: number | null;
             significantClinicalResponse: boolean;
         };
+        NutritionistAlertDto: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["NutritionistAlertType"];
+            /** Format: uuid */
+            patientId: string;
+            patientName: string | null;
+            patientCode: string | null;
+            message: string | null;
+            /** Format: date-time */
+            occurredAt: string;
+            isRead: boolean;
+            /** Format: date-time */
+            readAt: string | null;
+        };
+        NutritionistAlertListResult: {
+            items: components["schemas"]["NutritionistAlertDto"][] | null;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            unreadCount: number;
+        };
+        /** @enum {string} */
+        NutritionistAlertType: "PatientLinked" | "PatientSubtypeChanged";
         NutritionistAssignmentSummary: {
             /** Format: uuid */
             assignmentId: string;
@@ -7227,6 +8217,37 @@ export interface components {
             significantClinicalResponse: boolean;
             /** Format: int32 */
             registrationFrequency14d: number;
+        };
+        PatientRecommendationForNutritionistDto: {
+            /** Format: uuid */
+            recommendationId: string;
+            status: components["schemas"]["RecommendationStatus"];
+            source: components["schemas"]["RecommendationSource"];
+            title: string | null;
+            /** Format: int32 */
+            itemsCount: number;
+            /** Format: date-time */
+            generatedAt: string;
+            /** Format: date-time */
+            reviewedAt: string | null;
+            /** Format: date-time */
+            expiresAt: string | null;
+            /** Format: date-time */
+            validUntil: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            archivedAt: string | null;
+            archiveReason: components["schemas"]["ArchiveReason"];
+            foods: components["schemas"]["RecommendationFoodPreviewDto"][] | null;
+        };
+        PatientRecommendationForNutritionistDtoPagedResult: {
+            items: components["schemas"]["PatientRecommendationForNutritionistDto"][] | null;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            totalCount: number;
         };
         PendingReviewRecommendationDto: {
             /** Format: uuid */
@@ -7342,6 +8363,11 @@ export interface components {
             /** Format: date-time */
             submittedAt: string;
         };
+        RecommendationFoodPreviewDto: {
+            foodName: string | null;
+            actionType: components["schemas"]["ActionType"];
+            substituteFoodName: string | null;
+        };
         RecommendationItemDto: {
             /** Format: uuid */
             recommendationItemId: string;
@@ -7354,6 +8380,9 @@ export interface components {
             substituteFoodId: string | null;
             substituteFoodName: string | null;
             reasoning: string | null;
+        };
+        RecommendationReviewStatusDto: {
+            hasRecommendationInReview: boolean;
         };
         /** @enum {string} */
         RecommendationSource: "EngineGenerated" | "Manual";
@@ -7433,6 +8462,11 @@ export interface components {
         RejectRecommendationRequest: {
             /** @description Motivo del rechazo (entre 10 y 2000 caracteres sin contar los espacios de los extremos). */
             reason: string | null;
+        };
+        /** @description Solicitud para agregar un término al glosario. */
+        RequestGlossaryTermRequest: {
+            /** @description Término pedido; se recortan los espacios de los extremos y admite hasta 100 caracteres. */
+            term: string | null;
         };
         /** @description Cuerpo de la petición de solicitud de restablecimiento de contraseña. */
         RequestPasswordResetRequest: {
@@ -7610,6 +8644,11 @@ export interface components {
         };
         /** @enum {string} */
         UserStatus: "PendingActivation" | "Active" | "Inactive" | "Suspended";
+        /** @description Cuerpo de la petición que comprueba si un enlace de restablecimiento todavía sirve. */
+        ValidatePasswordResetRequest: {
+            /** @description Token de restablecimiento recibido por correo. */
+            token: string | null;
+        };
     };
     responses: never;
     parameters: never;

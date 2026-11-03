@@ -3,11 +3,13 @@ import type { AssignedPatient } from '@/modules/patients/domain/AssignedPatient'
 import {
   PatientAccessDeniedError,
   PatientNotFoundError,
+  type IbsSssCycle,
   type PatientDetail,
   type PatientEvolution,
 } from '@/modules/patients/domain/PatientRecord';
 import { toAssignedPatients } from '@/modules/patients/infrastructure/assignedPatientMapper';
 import {
+  toIbsSssCycle,
   toPatientDetail,
   toPatientEvolution,
 } from '@/modules/patients/infrastructure/patientRecordMapper';
@@ -76,5 +78,17 @@ export class HttpPatientsGateway implements PatientsGateway {
       throw failureFor(response.status);
     }
     return toPatientEvolution(data);
+  }
+
+  async getIbsSssCycle(patientId: string): Promise<IbsSssCycle> {
+    const { data, response } = await read(() =>
+      this.api.GET('/api/v1/nutritionists/me/patients/{patientId}/ibs-sss-cycle', {
+        params: { path: { patientId } },
+      }),
+    );
+    if (!response.ok) {
+      throw failureFor(response.status);
+    }
+    return toIbsSssCycle(data);
   }
 }

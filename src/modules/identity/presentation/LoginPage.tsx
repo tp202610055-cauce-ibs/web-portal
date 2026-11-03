@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate } from 'react-router';
+import { Link, Navigate } from 'react-router';
 
 import { LoginError } from '@/modules/identity/domain/LoginError';
 import { NUTRITIONIST_ROLE, type SignedOutReason } from '@/modules/identity/domain/Session';
@@ -149,6 +149,9 @@ function LoginForm({ notice }: { readonly notice: string | null }) {
           {submitting ? es.login.submitting : es.login.submit}
         </button>
       </form>
+      <p>
+        <Link to="/recuperar-contrasena">{es.passwordReset.forgot}</Link>
+      </p>
     </main>
   );
 }

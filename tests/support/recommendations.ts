@@ -5,6 +5,7 @@ type PendingReviewDto = components['schemas']['PendingReviewRecommendationDto'];
 type PendingReviewPageDto = components['schemas']['PendingReviewRecommendationDtoPagedResult'];
 type RecommendationDetailDto = components['schemas']['RecommendationDetailDto'];
 type SupportingDataDto = components['schemas']['RecommendationSupportingDataDto'];
+type PatientRecommendationDto = components['schemas']['PatientRecommendationForNutritionistDto'];
 
 // Synthetic recommendations of synthetic patients ("Paciente Prueba A" and "B"); never real people.
 export const REVIEW_PATIENT_ID = '00000000-0000-4000-8000-0000000000a1';
@@ -212,6 +213,60 @@ export function fakeRecommendationsGateway(
     approve: () => new Promise(() => undefined),
     reject: () => new Promise(() => undefined),
     modify: () => new Promise(() => undefined),
+    listForPatient: () => new Promise(() => undefined),
+    archive: () => new Promise(() => undefined),
+    createManual: () => new Promise(() => undefined),
     ...overrides,
   };
 }
+
+export function patientRecommendationBody(
+  overrides: Partial<PatientRecommendationDto> = {},
+): PatientRecommendationDto {
+  return {
+    recommendationId: PENDING_ID,
+    status: 'Approved',
+    source: 'EngineGenerated',
+    title: null,
+    itemsCount: 2,
+    generatedAt: '2026-10-20T14:30:00Z',
+    reviewedAt: '2026-10-20T16:00:00Z',
+    expiresAt: null,
+    validUntil: '2026-11-25T15:00:00Z',
+    isActive: true,
+    archivedAt: null,
+    // The snapshot does not mark it as nullable, but the backend sends null while it is active.
+    archiveReason: null as unknown as PatientRecommendationDto['archiveReason'],
+    foods: [],
+    ...overrides,
+  };
+}
+
+// CP074 after archiving and CP075 after the sweep: one active, two archived with their reasons.
+export const patientRecommendationsAfterArchive = {
+  items: [
+    patientRecommendationBody({
+      recommendationId: OVERDUE_ID,
+      title: 'Aumentar la fibra soluble',
+      source: 'Manual',
+      status: 'ManualApproved',
+    }),
+    patientRecommendationBody({
+      isActive: false,
+      archivedAt: '2026-10-26T15:00:00Z',
+      archiveReason: 'ObjectiveMet',
+    }),
+    patientRecommendationBody({
+      recommendationId: '00000000-0000-4000-8000-0000000000d3',
+      title: 'Reducir legumbres',
+      source: 'Manual',
+      status: 'ManualApproved',
+      isActive: false,
+      archivedAt: '2026-10-26T10:00:00Z',
+      archiveReason: 'TemporalExpiration',
+    }),
+  ],
+  page: 1,
+  pageSize: 100,
+  totalCount: 3,
+};
